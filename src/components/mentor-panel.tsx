@@ -18,6 +18,9 @@ const COURSE_LABELS: Record<CourseKey, string> = {
   fab: "ファブ",
 };
 
+// 入力フォームの表示順序（ゲーム → ファブ → ロボット）
+const COURSE_ORDER: CourseType[] = ["game", "fab", "robot"];
+
 interface MentorPanelProps {
   mentors: Mentor[];
   onAdd: () => void;
@@ -97,7 +100,7 @@ export const MentorPanel = ({
           </Button>
         </div>
         <div className="mt-4 grid gap-3">
-          {(Object.keys(COURSE_LABELS) as CourseType[]).map((course) => (
+          {COURSE_ORDER.map((course) => (
             <div key={course} className="grid gap-1.5">
               <Label htmlFor={`${mentor.id}-${course}`} className="flex items-center justify-between text-xs font-medium text-muted-foreground">
                 <span>{COURSE_LABELS[course]}</span>
@@ -127,22 +130,11 @@ export const MentorPanel = ({
   return (
     <Card className="flex h-full flex-col border-none bg-muted/30 backdrop-blur-sm">
       <CardHeader className="flex flex-col space-y-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-foreground">
-            メンター設定
-          </CardTitle>
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            onClick={onAdd}
-            aria-label="メンターを追加"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
+        <CardTitle className="text-lg font-semibold text-foreground">
+          メンター設定
+        </CardTitle>
         <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-          {(Object.keys(totalByCourse) as CourseType[]).map((course) => (
+          {COURSE_ORDER.map((course) => (
             <div key={course} className="rounded-md bg-background/70 px-3 py-2">
               <p className="font-medium text-foreground/70">{COURSE_LABELS[course]}</p>
               <p className="text-lg font-semibold text-foreground">
@@ -162,6 +154,16 @@ export const MentorPanel = ({
             <ScrollArea className="h-[calc(100vh-320px)] pr-4">
               <div className="flex flex-col gap-4 pb-6">
                 {mentors.map((mentor) => renderMentorCard(mentor))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-dashed"
+                  onClick={onAdd}
+                  aria-label="メンターを追加"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  メンターを追加
+                </Button>
               </div>
             </ScrollArea>
           </TabsContent>
