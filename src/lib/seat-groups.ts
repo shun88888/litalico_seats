@@ -10,29 +10,29 @@ export interface SeatInfo {
 //   - ゲーム(PG)/ファブ(DF)/プライム(RT)生徒: 長方形机(game-fab)のみ使用可能 → 座席 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 17, 18, 22, 23
 //   - 相互利用は一切不可
 export const SEATS: SeatInfo[] = [
-  { id: "1", type: "game-fab", position: { x: 22, y: 23 } },      // 長方形机（左上）
-  { id: "2", type: "game-fab", position: { x: 28.5, y: 18 } },    // 長方形机
-  { id: "3", type: "game-fab", position: { x: 38.5, y: 18 } },    // 長方形机
-  { id: "4", type: "game-fab", position: { x: 48.5, y: 18 } },    // 長方形机
-  { id: "5", type: "game-fab", position: { x: 58.5, y: 18 } },    // 長方形机
-  { id: "6", type: "game-fab", position: { x: 84.5, y: 18 } },    // 長方形机
-  { id: "7", type: "robot", position: { x: 79.5, y: 22 } },       // 正方形机（ロボット専用）
-  { id: "8", type: "robot", position: { x: 67, y: 32 } },         // 正方形机（ロボット専用）
-  { id: "9", type: "robot", position: { x: 79.5, y: 42 } },       // 正方形机（ロボット専用）
-  { id: "10", type: "robot", position: { x: 79.5, y: 46.5 } },    // 正方形机（ロボット専用）
-  { id: "11", type: "robot", position: { x: 67, y: 56.5 } },      // 正方形机（ロボット専用）
-  { id: "12", type: "robot", position: { x: 79.5, y: 66.5 } },    // 正方形机（ロボット専用）
-  { id: "13", type: "game-fab", position: { x: 79, y: 74.5 } },   // 長方形机
-  { id: "14", type: "game-fab", position: { x: 79, y: 82.5 } },   // 長方形机
-  { id: "15", type: "game-fab", position: { x: 79, y: 90.5 } },   // 長方形机
-  { id: "16", type: "game-fab", position: { x: 22, y: 80.5 } },   // 長方形机
-  { id: "17", type: "game-fab", position: { x: 22, y: 72.5 } },   // 長方形机
-  { id: "18", type: "game-fab", position: { x: 22, y: 64.5 } },   // 長方形机
-  { id: "19", type: "robot", position: { x: 28, y: 52.5 } },      // 正方形机（ロボット専用）
-  { id: "20", type: "robot", position: { x: 41, y: 42.5 } },      // 正方形机（ロボット専用）
-  { id: "21", type: "robot", position: { x: 28, y: 32.5 } },      // 正方形机（ロボット専用）
-  { id: "22", type: "game-fab", position: { x: 88.5, y: 102 } },  // 長方形机（右下縦）
-  { id: "23", type: "game-fab", position: { x: 88.5, y: 110 } },  // 長方形机（右下縦）
+  { id: "1", type: "game-fab", position: { x: 22, y: 20.44 } },      // 長方形机（左上）
+  { id: "2", type: "game-fab", position: { x: 28.5, y: 16.00 } },    // 長方形机
+  { id: "3", type: "game-fab", position: { x: 38.5, y: 16.00 } },    // 長方形机
+  { id: "4", type: "game-fab", position: { x: 48.5, y: 16.00 } },    // 長方形机
+  { id: "5", type: "game-fab", position: { x: 58.5, y: 16.00 } },    // 長方形机
+  { id: "6", type: "game-fab", position: { x: 84.5, y: 16.00 } },    // 長方形机
+  { id: "7", type: "robot", position: { x: 79.5, y: 19.56 } },       // 正方形机（ロボット専用）
+  { id: "8", type: "robot", position: { x: 67, y: 28.44 } },         // 正方形机（ロボット専用）
+  { id: "9", type: "robot", position: { x: 79.5, y: 37.33 } },       // 正方形机（ロボット専用）
+  { id: "10", type: "robot", position: { x: 79.5, y: 41.33 } },      // 正方形机（ロボット専用）
+  { id: "11", type: "robot", position: { x: 67, y: 50.22 } },        // 正方形机（ロボット専用）
+  { id: "12", type: "robot", position: { x: 79.5, y: 59.11 } },      // 正方形机（ロボット専用）
+  { id: "13", type: "game-fab", position: { x: 79, y: 66.22 } },     // 長方形机
+  { id: "14", type: "game-fab", position: { x: 79, y: 73.33 } },     // 長方形机
+  { id: "15", type: "game-fab", position: { x: 79, y: 80.44 } },     // 長方形机
+  { id: "16", type: "game-fab", position: { x: 22, y: 71.56 } },     // 長方形机
+  { id: "17", type: "game-fab", position: { x: 22, y: 64.44 } },     // 長方形机
+  { id: "18", type: "game-fab", position: { x: 22, y: 57.33 } },     // 長方形机
+  { id: "19", type: "robot", position: { x: 28, y: 46.67 } },        // 正方形机（ロボット専用）
+  { id: "20", type: "robot", position: { x: 41, y: 37.78 } },        // 正方形机（ロボット専用）
+  { id: "21", type: "robot", position: { x: 28, y: 28.89 } },        // 正方形机（ロボット専用）
+  { id: "22", type: "game-fab", position: { x: 88.5, y: 90.67 } },   // 長方形机（右下縦）
+  { id: "23", type: "game-fab", position: { x: 88.5, y: 97.78 } },   // 長方形机（右下縦）
 ];
 
 // 座席間の距離閾値（この距離以内なら隣接とみなす）

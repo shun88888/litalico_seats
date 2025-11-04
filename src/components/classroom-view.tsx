@@ -10,41 +10,40 @@ interface ClassroomViewProps {
 }
 
 const DESK_BLOCKS = [
-  { id: "l-vertical", left: 5, top: 5, width: 14, height: 25 },
-  { id: "l-horizontal", left: 5, top: 5, width: 63, height: 10.5 },
-  { id: "top-right", left: 73, top: 5, width: 23, height: 10.5 },
-  { id: "left-mid-square", left: 18, top: 35, width: 20, height: 15 },
-  { id: "right-upper-square", left:70, top: 24.5, width: 20, height: 15 },
-  { id: "right-lower-square", left: 70, top: 49, width: 20, height: 15 },
-  { id: "left-vertical-lower", left: 5, top: 60, width: 14, height: 25 },
-  { id: "right-vertical-lower", left: 82, top: 70, width: 13, height: 25 },
-  { id: "right-bottom-vertical", left: 82, top: 95, width: 13, height: 23 },
+  { id: "l-vertical", left: 5, top: 4.44, width: 14, height: 22.22 },
+  { id: "l-horizontal", left: 5, top: 4.44, width: 63, height: 9.33 },
+  { id: "top-right", left: 73, top: 4.44, width: 23, height: 9.33 },
+  { id: "left-mid-square", left: 18, top: 31.11, width: 20, height: 13.33 },
+  { id: "right-upper-square", left:70, top: 21.78, width: 20, height: 13.33 },
+  { id: "right-lower-square", left: 70, top: 43.56, width: 20, height: 13.33 },
+  { id: "left-vertical-lower", left: 5, top: 53.33, width: 14, height: 22.22 },
+  { id: "right-vertical-lower", left: 82, top: 62.22, width: 13, height: 22.22 },
+  { id: "right-bottom-vertical", left: 82, top: 85.44, width: 13, height: 11.6 },
 ];
 
 const SEAT_DOTS = [
-  { seatId: "1", left: 22, top: 23 },
-  { seatId: "2", left: 28.5, top: 18 },
-  { seatId: "3", left: 38.5, top: 18 },
-  { seatId: "4", left: 48.5, top: 18 },
-  { seatId: "5", left: 58.5, top: 18 },
-  { seatId: "6", left: 84.5, top: 18 },
-  { seatId: "7", left: 79.5, top: 22 },
-  { seatId: "8", left: 67, top: 32 },
-  { seatId: "9", left: 79.5, top: 42 },
-  { seatId: "10", left: 79.5, top: 46.5 },
-  { seatId: "11", left: 67, top: 56.5 },
-  { seatId: "12", left: 79.5, top: 66.5 },
-  { seatId: "13", left: 79, top: 74.5 },
-  { seatId: "14", left: 79, top: 82.5 },
-  { seatId: "15", left: 79, top: 90.5 },
-  { seatId: "16", left: 22, top: 80.5 },
-  { seatId: "17", left: 22, top: 72.5 },
-  { seatId: "18", left: 22, top: 64.5 },
-  { seatId: "19", left: 28, top: 52.5 },
-  { seatId: "20", left: 41, top: 42.5 },
-  { seatId: "21", left: 28, top: 32.5 },
-  { seatId: "22", left: 88.5, top: 102 },
-  { seatId: "23", left: 88.5, top: 110 },
+  { seatId: "1", left: 22, top: 20.44 },
+  { seatId: "2", left: 28.5, top: 16.00 },
+  { seatId: "3", left: 38.5, top: 16.00 },
+  { seatId: "4", left: 48.5, top: 16.00 },
+  { seatId: "5", left: 58.5, top: 16.00 },
+  { seatId: "6", left: 84.5, top: 16.00 },
+  { seatId: "7", left: 79.5, top: 19.56 },
+  { seatId: "8", left: 67, top: 28.44 },
+  { seatId: "9", left: 79.5, top: 37.33 },
+  { seatId: "10", left: 79.5, top: 41.33 },
+  { seatId: "11", left: 67, top: 50.22 },
+  { seatId: "12", left: 79.5, top: 59.11 },
+  { seatId: "13", left: 79, top: 66.22 },
+  { seatId: "14", left: 79, top: 73.33 },
+  { seatId: "15", left: 79, top: 80.44 },
+  { seatId: "16", left: 22, top: 71.56 },
+  { seatId: "17", left: 22, top: 64.44 },
+  { seatId: "18", left: 22, top: 57.33 },
+  { seatId: "19", left: 28, top: 46.67 },
+  { seatId: "20", left: 41, top: 37.78 },
+  { seatId: "21", left: 28, top: 28.89 },
+  { seatId: "22", left: 79, top: 91.24 },
 ];
 
 // UIに表示される座席のIDリスト
@@ -52,7 +51,7 @@ export const VISIBLE_SEAT_IDS = SEAT_DOTS.map(dot => dot.seatId);
 
 const DOT_SIZE = {
   width: 4,
-  height: 3,
+  height: 2.67, // 3 * (800/900) = 2.67 to maintain circular shape
 };
 
 const COURSE_LABELS: Record<CourseType, string> = {
@@ -155,10 +154,10 @@ export const ClassroomView = ({
         </div>
       </CardHeader>
       <CardContent className="flex-1">
-        <div className="relative mx-auto mt-2 w-full max-w-[520px]">
+        <div className="relative mx-auto mt-2 w-full max-w-[440px]">
           <div
             className="relative w-full overflow-hidden rounded-[36px] border border-slate-200 bg-white shadow-inner"
-            style={{ aspectRatio: "600 / 800" }}
+            style={{ aspectRatio: "600 / 900" }}
           >
             {DESK_BLOCKS.map((block) => (
               <div
@@ -209,7 +208,7 @@ export const ClassroomView = ({
         </div>
       </CardContent>
       {floorInfo && (
-        <div className="mx-auto mb-6 w-full max-w-[520px] rounded-xl border border-dashed border-slate-300 bg-white/80 px-4 py-3 text-xs text-slate-500">
+        <div className="mx-auto mb-6 w-full max-w-[440px] rounded-xl border border-dashed border-slate-300 bg-white/80 px-4 py-3 text-xs text-slate-500">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-sm text-slate-600">
               <span
