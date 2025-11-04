@@ -1,9 +1,10 @@
-export type CourseType = "robot" | "game" | "fab";
+export type CourseType = "robot" | "game" | "fab" | "prime";
 
 export interface CourseCounts {
   robot: number;
   game: number;
   fab: number;
+  prime: number;
 }
 
 export interface Mentor {
@@ -53,7 +54,15 @@ export interface FloorAllocation {
   contributors: Array<{ mentorId: string; count: number }>;
 }
 
+export interface AssignmentError {
+  mentorId: string;
+  mentorLabel: string;
+  unassignedCounts: CourseCounts;
+  reason: string;
+}
+
 export interface AssignmentResult {
   assignments: SeatAssignment[];
   floor: FloorAllocation | null;
+  errors: AssignmentError[];
 }

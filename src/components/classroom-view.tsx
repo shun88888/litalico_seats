@@ -18,6 +18,7 @@ const DESK_BLOCKS = [
   { id: "right-lower-square", left: 70, top: 49, width: 20, height: 15 },
   { id: "left-vertical-lower", left: 5, top: 60, width: 14, height: 25 },
   { id: "right-vertical-lower", left: 82, top: 70, width: 13, height: 25 },
+  { id: "right-bottom-vertical", left: 82, top: 95, width: 13, height: 23 },
 ];
 
 const SEAT_DOTS = [
@@ -42,6 +43,8 @@ const SEAT_DOTS = [
   { seatId: "19", left: 28, top: 52.5 },
   { seatId: "20", left: 41, top: 42.5 },
   { seatId: "21", left: 28, top: 32.5 },
+  { seatId: "22", left: 88.5, top: 102 },
+  { seatId: "23", left: 88.5, top: 110 },
 ];
 
 // UIに表示される座席のIDリスト
@@ -53,9 +56,10 @@ const DOT_SIZE = {
 };
 
 const COURSE_LABELS: Record<CourseType, string> = {
-  robot: "ロボット",
-  game: "ゲーム",
-  fab: "ファブ",
+  robot: "ロボット(RC)",
+  game: "ゲーム(PG)",
+  fab: "ファブ(DF)",
+  prime: "プライム(RT)",
 };
 
 const DEFAULT_SEAT_COLOR = "#d9d9d9";
@@ -87,15 +91,15 @@ export const ClassroomView = ({
   const seatTypeMap = useMemo(() => {
     const map = new Map<string, CourseType | "any">();
     // 座席1-21のタイプマッピング（厳格なルール）
-    // ロボット専用席（正方形机）: 7, 8, 9, 10, 11, 12, 19, 20, 21
-    // ゲーム/ファブ専用席（長方形机）: 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 17, 18
+    // ロボット(RC)専用席（正方形机）: 7, 8, 9, 10, 11, 12, 19, 20, 21
+    // ゲーム(PG)/ファブ(DF)/プライム(RT)専用席（長方形机）: 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 17, 18
     // 相互利用は一切不可
     const robotSeats = ["7", "8", "9", "10", "11", "12", "19", "20", "21"];
     SEAT_DOTS.forEach((dot) => {
       if (robotSeats.includes(dot.seatId)) {
         map.set(dot.seatId, "robot");
       } else {
-        map.set(dot.seatId, "game"); // game-fab専用席はgameとして表示
+        map.set(dot.seatId, "game"); // game-fab-prime専用席はgameとして表示
       }
     });
     return map;

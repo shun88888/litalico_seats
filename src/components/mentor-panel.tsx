@@ -13,13 +13,14 @@ import { cn } from "@/lib/utils";
 type CourseKey = CourseType;
 
 const COURSE_LABELS: Record<CourseKey, string> = {
-  robot: "ロボット",
-  game: "ゲーム",
-  fab: "ファブ",
+  robot: "ロボット(RC)",
+  game: "ゲーム(PG)",
+  fab: "ファブ(DF)",
+  prime: "プライム(RT)",
 };
 
-// 入力フォームの表示順序（ゲーム → ファブ → ロボット）
-const COURSE_ORDER: CourseType[] = ["game", "fab", "robot"];
+// 入力フォームの表示順序（ゲーム → ファブ → ロボット → プライム）
+const COURSE_ORDER: CourseType[] = ["game", "fab", "robot", "prime"];
 
 interface MentorPanelProps {
   mentors: Mentor[];
@@ -48,9 +49,10 @@ export const MentorPanel = ({
         acc.robot += mentor.counts.robot;
         acc.game += mentor.counts.game;
         acc.fab += mentor.counts.fab;
+        acc.prime += mentor.counts.prime;
         return acc;
       },
-      { robot: 0, game: 0, fab: 0 }
+      { robot: 0, game: 0, fab: 0, prime: 0 }
     );
   }, [mentors]);
 
@@ -133,7 +135,7 @@ export const MentorPanel = ({
         <CardTitle className="text-lg font-semibold text-foreground">
           メンター設定
         </CardTitle>
-        <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
           {COURSE_ORDER.map((course) => (
             <div key={course} className="rounded-md bg-background/70 px-3 py-2">
               <p className="font-medium text-foreground/70">{COURSE_LABELS[course]}</p>
@@ -194,6 +196,30 @@ export const MentorPanel = ({
         </Tabs>
       </CardContent>
       <CardFooter className="flex flex-col gap-2 border-t border-border/60 bg-background/40 py-4">
+        {assignments?.errors && assignments.errors.length > 0 && (
+          <div className="w-full space-y-2">
+            {assignments.errors.map((error) => (
+              <div
+                key={error.mentorId}
+                className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-xs"
+              >
+                <div className="font-semibold text-red-700 mb-1">
+                  ⚠️ {error.mentorLabel}: 配置エラー
+                </div>
+                <div className="text-red-600 text-[11px]">
+                  配置できなかった生徒:
+                  {error.unassignedCounts.robot > 0 && ` ロボット${error.unassignedCounts.robot}人`}
+                  {error.unassignedCounts.game > 0 && ` ゲーム${error.unassignedCounts.game}人`}
+                  {error.unassignedCounts.fab > 0 && ` ファブ${error.unassignedCounts.fab}人`}
+                  {error.unassignedCounts.prime > 0 && ` プライム${error.unassignedCounts.prime}人`}
+                </div>
+                <div className="text-red-600 text-[11px] mt-1">
+                  {error.reason}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {floorSummary ? (
           <div
             className={cn(

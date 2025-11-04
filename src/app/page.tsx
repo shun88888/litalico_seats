@@ -37,6 +37,7 @@ const createMentor = (index: number): Mentor => ({
     robot: 0,
     game: 0,
     fab: 0,
+    prime: 0,
   },
 });
 
