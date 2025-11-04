@@ -9,5 +9,17 @@ const PASTEL_PALETTE = [
   "hsl(290 50% 80%)",
 ];
 
-export const getMentorColor = (index: number) =>
-  PASTEL_PALETTE[index % PASTEL_PALETTE.length];
+/**
+ * メンターIDから一貫した色を取得
+ * IDからインデックスを抽出して色を割り当てる
+ */
+export const getMentorColor = (mentorId: string): string => {
+  // "mentor-1" から数字を抽出
+  const match = mentorId.match(/mentor-(\d+)/);
+  if (match) {
+    const index = parseInt(match[1], 10) - 1; // 1始まりなので-1
+    return PASTEL_PALETTE[index % PASTEL_PALETTE.length];
+  }
+  // フォールバック（想定外のID形式の場合）
+  return PASTEL_PALETTE[0];
+};

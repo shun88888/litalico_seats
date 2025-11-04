@@ -19,13 +19,17 @@ import type {
 
 // Available mentor names
 const MENTOR_NAMES = [
-  "わか@@",
-  "も@",
-  "もっ@ー",
-  "し@@",
   "か@ー",
-  "なか@@@",
+  "わか@@",
+  "し@す",
+  "あ@",
+  "もっ@ー",
+  "す@",
+  "あー@@",
+  "も@",
+  "きな@",
   "しょ@@",
+  "なか@@@",
   "ヘルプ1",
   "ヘルプ2",
   "ヘルプ3",
@@ -65,24 +69,39 @@ const createMentor = (index: number): Mentor => ({
   },
 });
 
-const normalizeLabels = (mentors: Mentor[]): Mentor[] =>
-  mentors.map((mentor, index) => ({
-    ...mentor,
-    label: `メンター${index + 1}`,
-  }));
+/**
+ * 既存のメンターから空いている最小の番号を見つける
+ */
+const findNextAvailableNumber = (mentors: Mentor[]): number => {
+  // 既存のメンター番号を抽出（mentor-1 → 1）
+  const existingNumbers = mentors
+    .map(m => {
+      const match = m.id.match(/mentor-(\d+)/);
+      return match ? parseInt(match[1], 10) : 0;
+    })
+    .filter(n => n > 0);
+
+  // 1から順番にチェックして、使われていない最小の番号を返す
+  let number = 1;
+  while (existingNumbers.includes(number)) {
+    number++;
+  }
+  return number;
+};
 
 const seatingReducer = (state: SeatingState, action: SeatingAction): SeatingState => {
   switch (action.type) {
     case "add-mentor": {
-      const nextCounter = state.counter + 1;
-      const nextMentors = normalizeLabels([
+      // 空いている最小の番号を見つける
+      const nextNumber = findNextAvailableNumber(state.mentors);
+      const nextMentors = [
         ...state.mentors,
-        createMentor(nextCounter),
-      ]);
+        createMentor(nextNumber),
+      ];
       return {
         mentors: nextMentors,
         assignments: null,
-        counter: nextCounter,
+        counter: state.counter, // counterは使わなくなったが、互換性のため保持
       };
     }
     case "remove-mentor": {
@@ -93,7 +112,7 @@ const seatingReducer = (state: SeatingState, action: SeatingAction): SeatingStat
         (mentor) => mentor.id !== action.mentorId
       );
       return {
-        mentors: normalizeLabels(filtered),
+        mentors: filtered,
         assignments: null,
         counter: state.counter,
       };
@@ -186,8 +205,8 @@ export default function Page() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const mentorColors = useMemo(() => {
-    return state.mentors.reduce<Record<string, string>>((acc, mentor, index) => {
-      acc[mentor.id] = getMentorColor(index);
+    return state.mentors.reduce<Record<string, string>>((acc, mentor) => {
+      acc[mentor.id] = getMentorColor(mentor.id);
       return acc;
     }, {});
   }, [state.mentors]);

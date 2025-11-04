@@ -158,17 +158,12 @@ export const PREFERRED_SEAT_GROUPS: PreferredSeatGroup[] = [
  * 時計回り順で連続する座席ペアの明示的な定義
  * 物理的に離れすぎているペアは除外（座標距離 > 20は非隣接とみなす）
  * 除外ペア:
- *   - "5-6": 上部L字の右端から右上へ（距離26）
- *   - "15-16": 右下上から右下中央へ（隣接）
- *   - "16-17": 右下中央から右下右へ（隣接）
- *   - "17-18": 右下右から右下左へ（隣接）
  *   - "18-19": 右下左→左下上で距離大、除外
  * 特別ペア（低優先席スキップ用）:
  *   - "8-11": 座席8から11へのジャンプ（9,10をスキップ）
  */
 const CLOCKWISE_ADJACENT_PAIRS = new Set([
-  "1-2", "2-3", "3-4", "4-5",
-  // "5-6" は除外（上部L字右端→右上で距離26）
+  "1-2", "2-3", "3-4", "4-5", "5-6",
   "6-7", "7-8", "8-9", "9-10", "10-11",
   "8-11",  // 特別: 座席8から11へのジャンプ（9,10をスキップ）
   "11-12", "12-13", "13-14", "14-15",
@@ -180,10 +175,9 @@ const CLOCKWISE_ADJACENT_PAIRS = new Set([
 
 /**
  * 2つの座席が時計回り順で隣接しているかチェック
- * 特別ケース: 8→11（9,10をスキップ）も隣接として扱う
- * @param allowSkipLowPriority trueの場合、8→11のジャンプを許可
+ * @param includeJump trueの場合、8→11のジャンプも隣接として扱う（デフォルトはfalse）
  */
-export const isClockwiseAdjacent = (seat1: string, seat2: string, allowSkipLowPriority: boolean = true): boolean => {
+export const isClockwiseAdjacent = (seat1: string, seat2: string, includeJump: boolean = false): boolean => {
   const idx1 = (CLOCKWISE_ORDER as readonly string[]).indexOf(seat1);
   const idx2 = (CLOCKWISE_ORDER as readonly string[]).indexOf(seat2);
 
@@ -191,12 +185,12 @@ export const isClockwiseAdjacent = (seat1: string, seat2: string, allowSkipLowPr
 
   const pairKey = `${seat1}-${seat2}`;
 
-  // 8→11のジャンプを許可しない場合は除外
-  if (!allowSkipLowPriority && pairKey === "8-11") {
+  // 8→11のジャンプを含めない場合は除外
+  if (!includeJump && pairKey === "8-11") {
     return false;
   }
 
-  // 明示的な隣接ペアリストをチェック（8→11も含む）
+  // 明示的な隣接ペアリストをチェック
   if (CLOCKWISE_ADJACENT_PAIRS.has(pairKey)) {
     return true;
   }
