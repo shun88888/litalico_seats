@@ -35,6 +35,29 @@
   --radius: 0.75rem;
 }
 
+/*
+  Balanced left padding when content is centered (max-w-6xl) but a fixed
+  collapsed sidebar hides the left auto-margin. This class adds the right
+  auto-margin amount to the left padding so that visible left and right
+  whitespace look equal. It does not move or resize main content.
+*/
+.balanced-left-padding {
+  --container-pad: 1rem; /* matches px-4 */
+  padding-left: calc(var(--container-pad) + (100vw - min(100vw, 72rem)) / 2);
+}
+
+@media (min-width: 640px) {
+  .balanced-left-padding {
+    --container-pad: 1.5rem; /* sm:px-6 */
+  }
+}
+
+@media (min-width: 1024px) {
+  .balanced-left-padding {
+    --container-pad: 2rem; /* lg:px-8 */
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: 20 14.3% 4.1%;
