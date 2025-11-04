@@ -7,7 +7,7 @@ export interface SeatInfo {
 // 座席の座標情報（時計回りに1-24の番号を振る）
 // ルール（厳格）:
 //   - ロボット(RC)生徒: 正方形机(robot)のみ使用可能 → 座席 7, 8, 9, 10, 11, 12, 17, 18, 22, 23, 24
-//   - ゲーム(PG)/ファブ(DF)/プライム(RT)生徒: 長方形机(game-fab)のみ使用可能 → 座席 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 19, 20, 21
+//   - ゲーム(PG)/デジファブ(DF)/プライム(RT)生徒: 長方形机(game-fab)のみ使用可能 → 座席 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 19, 20, 21
 //   - 相互利用は一切不可
 //   - 座席17, 18は床席（ロボット専用、最終手段のみ使用）
 export const SEATS: SeatInfo[] = [
@@ -50,7 +50,7 @@ export const ROBOT_SEAT_PRIORITY = {
 };
 
 /**
- * ゲーム・ファブ・プライム席の優先度
+ * ゲーム・デジファブ・プライム席の優先度
  */
 export const GAME_FAB_PRIORITY = {
   fourPeople: ["1", "2", "3", "4"],  // 4人の場合に優先する上部L字エリア
@@ -109,14 +109,14 @@ export const CLOCKWISE_ORDER = [
 export interface PreferredSeatGroup {
   name: string;
   seats: string[];
-  // ゲーム/ファブが4人以上の場合に優先
+  // ゲーム/デジファブが4人以上の場合に優先
   preferForGameFab4Plus?: boolean;
   // ロボット+ゲームの混合に適している
   preferForMixed?: boolean;
 }
 
 export const PREFERRED_SEAT_GROUPS: PreferredSeatGroup[] = [
-  // 上部L字デスク（ゲーム/ファブ4人以上で優先）
+  // 上部L字デスク（ゲーム/デジファブ4人以上で優先）
   {
     name: "上部L字エリア",
     seats: ["2", "3", "4", "5"],
@@ -140,7 +140,7 @@ export const PREFERRED_SEAT_GROUPS: PreferredSeatGroup[] = [
     seats: ["11", "12", "13", "14"],
     preferForMixed: true,
   },
-  // 左下混合エリア（ロボット+ゲーム/ファブ）
+  // 左下混合エリア（ロボット+ゲーム/デジファブ）
   {
     name: "左下混合エリア",
     seats: ["20", "21", "22", "23"],

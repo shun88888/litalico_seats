@@ -211,7 +211,7 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
    *
    * ルール:
    * - ロボット席にはロボット生徒のみ
-   * - ゲーム/ファブ席にはゲーム/ファブ/プライム生徒のみ
+   * - ゲーム/デジファブ席にはゲーム/デジファブ/プライム生徒のみ
    */
   const tryArrangeSeats = (
     seats: string[],
@@ -251,7 +251,7 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
           robotAssigned++;
         }
       } else if (seatType === "game-fab") {
-        // ゲーム/ファブ席にゲーム、ファブ、プライム生徒を配置
+        // ゲーム/デジファブ席にゲーム、デジファブ、プライム生徒を配置
         if (gameAssigned < required.game) {
           result.push({ seatId, mentorId: "", course: "game" });
           gameAssigned++;
@@ -283,17 +283,17 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
   // ========================================
   const totalRobotCount = mentors.reduce((sum, mentor) => sum + mentor.counts.robot, 0);
 
-  // ゲーム/ファブ/プライムの合計が4人以上のメンター数をカウント
+  // ゲーム/デジファブ/プライムの合計が4人以上のメンター数をカウント
   const mentorsWithGameFabPrime4Plus = mentors.filter(mentor => {
     const gameFabPrimeCount = mentor.counts.game + mentor.counts.fab + mentor.counts.prime;
     return gameFabPrimeCount >= 4;
   }).length;
 
-  // ゲーム/ファブ/プライムの合計人数
+  // ゲーム/デジファブ/プライムの合計人数
   const totalGameFabPrimeCount = mentors.reduce((sum, mentor) =>
     sum + mentor.counts.game + mentor.counts.fab + mentor.counts.prime, 0);
 
-  // ゲーム/ファブ/プライム2人 + ロボット2人の混合メンターがいるか
+  // ゲーム/デジファブ/プライム2人 + ロボット2人の混合メンターがいるか
   const hasMixedMentor2Plus2 = mentors.some(mentor => {
     const gameFabPrimeCount = mentor.counts.game + mentor.counts.fab + mentor.counts.prime;
     const robotCount = mentor.counts.robot;
@@ -304,15 +304,15 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
   // 座席9,10を解放する条件を判定
   // ========================================
   // 条件1: 授業全体でロボット8人以上
-  // 条件2: ゲーム/ファブ/プライムが4人以上のメンターが2人以上
+  // 条件2: ゲーム/デジファブ/プライムが4人以上のメンターが2人以上
   const useAllRobotSeats = totalRobotCount >= 8 || mentorsWithGameFabPrime4Plus >= 2;
 
   // ========================================
   // 座席5を使用する条件を判定
   // ========================================
-  // 条件1: ゲーム/ファブ/プライムが4人以上のメンターが2人以上
-  // 条件2: 授業全体でゲーム/ファブ/プライムの合計が11人以上
-  // 条件3: ゲーム/ファブ/プライム2人 + ロボット2人の混合メンターがいる
+  // 条件1: ゲーム/デジファブ/プライムが4人以上のメンターが2人以上
+  // 条件2: 授業全体でゲーム/デジファブ/プライムの合計が11人以上
+  // 条件3: ゲーム/デジファブ/プライム2人 + ロボット2人の混合メンターがいる
   const useSeat5 =
     mentorsWithGameFabPrime4Plus >= 2 ||
     totalGameFabPrimeCount >= 11 ||
@@ -320,9 +320,9 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
 
   console.log(`[全体戦略]
   ロボット人数: ${totalRobotCount}人
-  ゲーム/ファブ/プライム合計: ${totalGameFabPrimeCount}人
-  ゲーム/ファブ/プライム4人以上のメンター: ${mentorsWithGameFabPrime4Plus}人
-  混合メンター(G/F/P2人+RC2人): ${hasMixedMentor2Plus2 ? 'あり' : 'なし'}
+  ゲーム/デジファブ/プライム合計: ${totalGameFabPrimeCount}人
+  ゲーム/デジファブ/プライム4人以上のメンター: ${mentorsWithGameFabPrime4Plus}人
+  混合メンター(G/DF/P2人+RC2人): ${hasMixedMentor2Plus2 ? 'あり' : 'なし'}
   → 座席9,10を${useAllRobotSeats ? '使用' : '避ける'}
   → 座席5を${useSeat5 ? '使用' : '使用しない'}`);
 

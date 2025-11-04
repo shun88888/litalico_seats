@@ -22,11 +22,11 @@ type CourseKey = CourseType;
 const COURSE_LABELS: Record<CourseKey, string> = {
   robot: "ロボット(RC)",
   game: "ゲーム(PG)",
-  fab: "ファブ(DF)",
+  fab: "デジファブ(DF)",
   prime: "プライム(RT)",
 };
 
-// 入力フォームの表示順序（ゲーム → ファブ → ロボット → プライム）
+// 入力フォームの表示順序（ゲーム → デジファブ → ロボット → プライム）
 const COURSE_ORDER: CourseType[] = ["game", "fab", "robot", "prime"];
 
 interface MentorPanelProps {
@@ -194,7 +194,7 @@ export const MentorPanel = ({
                 <ul className="list-outside list-disc space-y-1 pl-5">
                   <li>各コースは専用の机を優先して使用します。</li>
                   <li>ゲーム席が不足したら余りのロボット席へ移します。</li>
-                  <li>ファブ席が不足したら余りのゲーム席へ移します。</li>
+                  <li>デジファブ席が不足したら余りのゲーム席へ移します。</li>
                   <li>ロボット席が不足した分は床扱いになります。</li>
                 </ul>
                 <p className="font-semibold text-foreground/70">床配置の扱い</p>
@@ -228,7 +228,7 @@ export const MentorPanel = ({
                   配置できなかった生徒:
                   {error.unassignedCounts.robot > 0 && ` ロボット${error.unassignedCounts.robot}人`}
                   {error.unassignedCounts.game > 0 && ` ゲーム${error.unassignedCounts.game}人`}
-                  {error.unassignedCounts.fab > 0 && ` ファブ${error.unassignedCounts.fab}人`}
+                  {error.unassignedCounts.fab > 0 && ` デジファブ${error.unassignedCounts.fab}人`}
                   {error.unassignedCounts.prime > 0 && ` プライム${error.unassignedCounts.prime}人`}
                 </div>
                 <div className="text-red-600 text-[11px] mt-1">

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import type { AssignmentResult, CourseType, Mentor } from "@/types/seating";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,8 +68,15 @@ const DOT_SIZE = {
 const COURSE_LABELS: Record<CourseType, string> = {
   robot: "ロボット(RC)",
   game: "ゲーム(PG)",
-  fab: "ファブ(DF)",
+  fab: "デジファブ(DF)",
   prime: "プライム(RT)",
+};
+
+const COURSE_SHORT: Record<CourseType, string> = {
+  robot: "RC",
+  game: "PG",
+  fab: "DF",
+  prime: "RT",
 };
 
 const DEFAULT_SEAT_COLOR = "#d9d9d9";
@@ -104,7 +111,7 @@ export const ClassroomView = ({
     const map = new Map<string, CourseType | "any">();
     // 座席1-24のタイプマッピング（厳格なルール）
     // ロボット(RC)専用席（正方形机）: 7, 8, 9, 10, 11, 12, 17, 18, 22, 23, 24
-    // ゲーム(PG)/ファブ(DF)/プライム(RT)専用席（長方形机）: 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 19, 20, 21
+    // ゲーム(PG)/デジファブ(DF)/プライム(RT)専用席（長方形机）: 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 19, 20, 21
     // 相互利用は一切不可
     // 座席17, 18は床席（ロボット専用、最終手段のみ使用）
     const robotSeats = ["7", "8", "9", "10", "11", "12", "17", "18", "22", "23", "24"];
@@ -117,6 +124,28 @@ export const ClassroomView = ({
     });
     return map;
   }, []);
+
+  // メンターごとの残り人数を計算
+  const mentorRemainingCounts = useMemo(() => {
+    const remaining = new Map<string, { robot: number; game: number; fab: number; prime: number }>();
+
+    mentors.forEach((mentor) => {
+      // 初期値は各メンターの全体人数
+      remaining.set(mentor.id, { ...mentor.counts });
+    });
+
+    // 配置済みの座席から人数を減らす
+    if (assignments) {
+      assignments.assignments.forEach((assignment) => {
+        const counts = remaining.get(assignment.mentorId);
+        if (counts && counts[assignment.course] > 0) {
+          counts[assignment.course]--;
+        }
+      });
+    }
+
+    return remaining;
+  }, [mentors, assignments]);
 
 
   const legendItems = mentors.map((mentor, index) => ({
@@ -181,43 +210,56 @@ export const ClassroomView = ({
                 : "未割り当て";
 
               return (
-                <DropdownMenu key={dot.seatId}>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border border-white/70 shadow cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
-                      style={{
-                        left: `${dot.left}%`,
-                        top: `${dot.top}%`,
-                        width: `${DOT_SIZE.width}%`,
-                        height: `${DOT_SIZE.height}%`,
-                        backgroundColor,
-                      }}
-                      title={title}
-                      onClick={() => setSelectedSeat(dot.seatId)}
-                    >
-                      <span className="text-[8px] font-bold text-gray-700 select-none">
-                        {dot.seatId}
-                      </span>
-                    </button>
-                  </DropdownMenuTrigger>
+                <React.Fragment key={dot.seatId}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border border-white/70 shadow cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
+                        style={{
+                          left: `${dot.left}%`,
+                          top: `${dot.top}%`,
+                          width: `${DOT_SIZE.width}%`,
+                          height: `${DOT_SIZE.height}%`,
+                          backgroundColor,
+                        }}
+                        title={title}
+                        onClick={() => setSelectedSeat(dot.seatId)}
+                      >
+                        <span className="text-[8px] font-bold text-gray-700 select-none">
+                          {dot.seatId}
+                        </span>
+                      </button>
+                    </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuLabel>座席 {dot.seatId} - メンターを選択</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {mentors.map((mentor) => (
-                      <DropdownMenuItem
-                        key={mentor.id}
-                        onClick={() => {
-                          const defaultCourse = seatType === "robot" ? "robot" : "game";
-                          onManualAssignSeat(dot.seatId, mentor.id, defaultCourse);
-                        }}
-                      >
-                        <span
-                          className="h-3 w-3 rounded-full mr-2 inline-block"
-                          style={{ backgroundColor: mentorColors[mentor.id] }}
-                        />
-                        {mentor.label}
-                      </DropdownMenuItem>
-                    ))}
+                    {mentors.map((mentor) => {
+                      const remaining = mentorRemainingCounts.get(mentor.id);
+                      const defaultCourse = seatType === "robot" ? "robot" : "game";
+                      const remainingCount = remaining ? remaining[defaultCourse] : 0;
+
+                      return (
+                        <DropdownMenuItem
+                          key={mentor.id}
+                          onClick={() => {
+                            onManualAssignSeat(dot.seatId, mentor.id, defaultCourse);
+                          }}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center">
+                              <span
+                                className="h-3 w-3 rounded-full mr-2 inline-block"
+                                style={{ backgroundColor: mentorColors[mentor.id] }}
+                              />
+                              {mentor.label}
+                            </div>
+                            <span className="ml-4 text-xs text-muted-foreground">
+                              残り: {remaining ? `PG ${remaining.game} DF ${remaining.fab} RC ${remaining.robot} RT ${remaining.prime}` : '0'}
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                      );
+                    })}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => {
@@ -229,6 +271,18 @@ export const ClassroomView = ({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                {occupant && (
+                  <span
+                    className="absolute -translate-x-1/2 text-[7px] font-semibold text-gray-600 select-none pointer-events-none"
+                    style={{
+                      left: `${dot.left}%`,
+                      top: `${dot.top + 1}%`,
+                    }}
+                  >
+                    {COURSE_SHORT[occupant.course]}
+                  </span>
+                )}
+              </React.Fragment>
               );
             })}
           </div>
