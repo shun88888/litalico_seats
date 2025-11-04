@@ -52,6 +52,8 @@ export interface FloorAllocation {
   ownerMentorId: string;
   total: number;
   contributors: Array<{ mentorId: string; count: number }>;
+  // 床席の具体的な座席ID（17または18）
+  seatIds: string[];
 }
 
 export interface AssignmentError {

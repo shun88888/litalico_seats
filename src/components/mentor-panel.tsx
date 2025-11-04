@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type CourseKey = CourseType;
@@ -27,10 +34,12 @@ interface MentorPanelProps {
   onAdd: () => void;
   onRemove: (mentorId: string) => void;
   onUpdateCount: (mentorId: string, course: CourseType, value: number) => void;
+  onUpdateMentorName: (mentorId: string, name: string) => void;
   onCreate: () => void;
   onResetAssignments: () => void;
   mentorColors: Record<string, string>;
   assignments: AssignmentResult | null;
+  availableMentorNames: string[];
 }
 
 export const MentorPanel = ({
@@ -38,10 +47,12 @@ export const MentorPanel = ({
   onAdd,
   onRemove,
   onUpdateCount,
+  onUpdateMentorName,
   onCreate,
   onResetAssignments,
   mentorColors,
   assignments,
+  availableMentorNames,
 }: MentorPanelProps) => {
   const totalByCourse = useMemo(() => {
     return mentors.reduce(
@@ -76,19 +87,35 @@ export const MentorPanel = ({
 
   const renderMentorCard = (mentor: Mentor) => {
     const color = mentorColors[mentor.id];
+    const isDefaultLabel = !availableMentorNames.includes(mentor.label);
+
     return (
       <div
         key={mentor.id}
         className="rounded-xl border border-dashed border-muted bg-card/60 p-4 shadow-sm"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span
               aria-hidden
               className="h-3 w-3 rounded-full"
               style={{ backgroundColor: color }}
             />
-            <p className="text-sm font-semibold text-foreground">{mentor.label}</p>
+            <Select
+              value={isDefaultLabel ? "" : mentor.label}
+              onValueChange={(value) => onUpdateMentorName(mentor.id, value)}
+            >
+              <SelectTrigger className="h-8 w-[140px]">
+                <SelectValue placeholder={isDefaultLabel ? mentor.label : "メンター名を選択"} />
+              </SelectTrigger>
+              <SelectContent>
+                {availableMentorNames.map((name) => (
+                  <SelectItem key={name} value={name}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <Button
             type="button"

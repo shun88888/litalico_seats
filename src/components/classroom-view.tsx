@@ -37,13 +37,15 @@ const SEAT_DOTS = [
   { seatId: "13", left: 79, top: 66.22 },
   { seatId: "14", left: 79, top: 73.33 },
   { seatId: "15", left: 79, top: 80.44 },
-  { seatId: "16", left: 22, top: 71.56 },
-  { seatId: "17", left: 22, top: 64.44 },
-  { seatId: "18", left: 22, top: 57.33 },
-  { seatId: "19", left: 28, top: 46.67 },
-  { seatId: "20", left: 41, top: 37.78 },
-  { seatId: "21", left: 28, top: 28.89 },
-  { seatId: "22", left: 79, top: 91.24 },
+  { seatId: "16", left: 79, top: 90.67 },
+  { seatId: "17", left: 45, top: 65 },
+  { seatId: "18", left: 55, top: 65 },
+  { seatId: "19", left: 22, top: 71.56 },
+  { seatId: "20", left: 22, top: 64.44 },
+  { seatId: "21", left: 22, top: 57.33 },
+  { seatId: "22", left: 28, top: 46.67 },
+  { seatId: "23", left: 41, top: 37.78 },
+  { seatId: "24", left: 28, top: 28.89 },
 ];
 
 // UIに表示される座席のIDリスト
@@ -89,11 +91,12 @@ export const ClassroomView = ({
 
   const seatTypeMap = useMemo(() => {
     const map = new Map<string, CourseType | "any">();
-    // 座席1-21のタイプマッピング（厳格なルール）
-    // ロボット(RC)専用席（正方形机）: 7, 8, 9, 10, 11, 12, 19, 20, 21
-    // ゲーム(PG)/ファブ(DF)/プライム(RT)専用席（長方形机）: 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 17, 18
+    // 座席1-24のタイプマッピング（厳格なルール）
+    // ロボット(RC)専用席（正方形机）: 7, 8, 9, 10, 11, 12, 17, 18, 22, 23, 24
+    // ゲーム(PG)/ファブ(DF)/プライム(RT)専用席（長方形机）: 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 19, 20, 21
     // 相互利用は一切不可
-    const robotSeats = ["7", "8", "9", "10", "11", "12", "19", "20", "21"];
+    // 座席17, 18は床席（ロボット専用、最終手段のみ使用）
+    const robotSeats = ["7", "8", "9", "10", "11", "12", "17", "18", "22", "23", "24"];
     SEAT_DOTS.forEach((dot) => {
       if (robotSeats.includes(dot.seatId)) {
         map.set(dot.seatId, "robot");

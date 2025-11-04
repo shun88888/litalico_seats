@@ -17,6 +17,20 @@ import type {
   Mentor,
 } from "@/types/seating";
 
+// Available mentor names
+const MENTOR_NAMES = [
+  "わか@@",
+  "も@",
+  "もっ@ー",
+  "し@@",
+  "か@ー",
+  "なか@@@",
+  "しょ@@",
+  "ヘルプ1",
+  "ヘルプ2",
+  "ヘルプ3",
+];
+
 interface SeatingState {
   mentors: Mentor[];
   assignments: AssignmentResult | null;
@@ -31,6 +45,11 @@ type SeatingAction =
       mentorId: string;
       course: CourseType;
       value: number;
+    }
+  | {
+      type: "update-mentor-name";
+      mentorId: string;
+      name: string;
     }
   | { type: "set-assignments"; assignments: AssignmentResult }
   | { type: "reset-assignments" };
@@ -93,6 +112,21 @@ const seatingReducer = (state: SeatingState, action: SeatingAction): SeatingStat
       );
       return {
         mentors: updated,
+        assignments: null,
+        counter: state.counter,
+      };
+    }
+    case "update-mentor-name": {
+      const updatedMentors = state.mentors.map((mentor) =>
+        mentor.id === action.mentorId
+          ? {
+              ...mentor,
+              label: action.name,
+            }
+          : mentor
+      );
+      return {
+        mentors: updatedMentors,
         assignments: null,
         counter: state.counter,
       };
@@ -169,6 +203,9 @@ export default function Page() {
     value: number
   ) => dispatch({ type: "update-count", mentorId, course, value });
 
+  const handleUpdateMentorName = (mentorId: string, name: string) =>
+    dispatch({ type: "update-mentor-name", mentorId, name });
+
   const handleCreate = () => {
     const assignments = assignSeats(state.mentors);
     dispatch({ type: "set-assignments", assignments });
@@ -215,6 +252,9 @@ export default function Page() {
       </Sidebar>
       <motion.main
         className="overflow-auto"
+        initial={{
+          marginLeft: "60px",
+        }}
         animate={{
           marginLeft: sidebarOpen ? "300px" : "60px",
         }}
@@ -230,10 +270,12 @@ export default function Page() {
               onAdd={handleAddMentor}
               onRemove={handleRemoveMentor}
               onUpdateCount={handleUpdateCount}
+              onUpdateMentorName={handleUpdateMentorName}
               onCreate={handleCreate}
               onResetAssignments={handleReset}
               mentorColors={mentorColors}
               assignments={state.assignments}
+              availableMentorNames={MENTOR_NAMES}
             />
             <ClassroomView
               mentors={state.mentors}

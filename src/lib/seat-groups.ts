@@ -4,11 +4,12 @@ export interface SeatInfo {
   position: { x: number; y: number };
 }
 
-// 座席の座標情報（時計回りに1-23の番号を振る）
+// 座席の座標情報（時計回りに1-24の番号を振る）
 // ルール（厳格）:
-//   - ロボット(RC)生徒: 正方形机(robot)のみ使用可能 → 座席 7, 8, 9, 10, 11, 12, 19, 20, 21
-//   - ゲーム(PG)/ファブ(DF)/プライム(RT)生徒: 長方形机(game-fab)のみ使用可能 → 座席 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 17, 18, 22, 23
+//   - ロボット(RC)生徒: 正方形机(robot)のみ使用可能 → 座席 7, 8, 9, 10, 11, 12, 17, 18, 22, 23, 24
+//   - ゲーム(PG)/ファブ(DF)/プライム(RT)生徒: 長方形机(game-fab)のみ使用可能 → 座席 1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 19, 20, 21
 //   - 相互利用は一切不可
+//   - 座席17, 18は床席（ロボット専用、最終手段のみ使用）
 export const SEATS: SeatInfo[] = [
   { id: "1", type: "game-fab", position: { x: 22, y: 20.44 } },      // 長方形机（左上）
   { id: "2", type: "game-fab", position: { x: 28.5, y: 16.00 } },    // 長方形机
@@ -16,27 +17,44 @@ export const SEATS: SeatInfo[] = [
   { id: "4", type: "game-fab", position: { x: 48.5, y: 16.00 } },    // 長方形机
   { id: "5", type: "game-fab", position: { x: 58.5, y: 16.00 } },    // 長方形机
   { id: "6", type: "game-fab", position: { x: 84.5, y: 16.00 } },    // 長方形机
-  { id: "7", type: "robot", position: { x: 79.5, y: 19.56 } },       // 正方形机（ロボット専用）
-  { id: "8", type: "robot", position: { x: 67, y: 28.44 } },         // 正方形机（ロボット専用）
-  { id: "9", type: "robot", position: { x: 79.5, y: 37.33 } },       // 正方形机（ロボット専用）
-  { id: "10", type: "robot", position: { x: 79.5, y: 41.33 } },      // 正方形机（ロボット専用）
-  { id: "11", type: "robot", position: { x: 67, y: 50.22 } },        // 正方形机（ロボット専用）
-  { id: "12", type: "robot", position: { x: 79.5, y: 59.11 } },      // 正方形机（ロボット専用）
+  { id: "7", type: "robot", position: { x: 79.5, y: 19.56 } },       // 正方形机（ロボット専用・高優先）
+  { id: "8", type: "robot", position: { x: 67, y: 28.44 } },         // 正方形机（ロボット専用・高優先）
+  { id: "9", type: "robot", position: { x: 79.5, y: 37.33 } },       // 正方形机（ロボット専用・低優先）
+  { id: "10", type: "robot", position: { x: 79.5, y: 41.33 } },      // 正方形机（ロボット専用・低優先）
+  { id: "11", type: "robot", position: { x: 67, y: 50.22 } },        // 正方形机（ロボット専用・高優先）
+  { id: "12", type: "robot", position: { x: 79.5, y: 59.11 } },      // 正方形机（ロボット専用・高優先）
   { id: "13", type: "game-fab", position: { x: 79, y: 66.22 } },     // 長方形机
   { id: "14", type: "game-fab", position: { x: 79, y: 73.33 } },     // 長方形机
   { id: "15", type: "game-fab", position: { x: 79, y: 80.44 } },     // 長方形机
-  { id: "16", type: "game-fab", position: { x: 22, y: 71.56 } },     // 長方形机
-  { id: "17", type: "game-fab", position: { x: 22, y: 64.44 } },     // 長方形机
-  { id: "18", type: "game-fab", position: { x: 22, y: 57.33 } },     // 長方形机
-  { id: "19", type: "robot", position: { x: 28, y: 46.67 } },        // 正方形机（ロボット専用）
-  { id: "20", type: "robot", position: { x: 41, y: 37.78 } },        // 正方形机（ロボット専用）
-  { id: "21", type: "robot", position: { x: 28, y: 28.89 } },        // 正方形机（ロボット専用）
-  { id: "22", type: "game-fab", position: { x: 88.5, y: 90.67 } },   // 長方形机（右下縦）
-  { id: "23", type: "game-fab", position: { x: 88.5, y: 97.78 } },   // 長方形机（右下縦）
+  { id: "16", type: "game-fab", position: { x: 79, y: 90.67 } },     // 長方形机（右下）
+  { id: "17", type: "robot", position: { x: 45, y: 65 } },           // 床席（ロボット専用・最終手段）
+  { id: "18", type: "robot", position: { x: 55, y: 65 } },           // 床席（ロボット専用・最終手段）
+  { id: "19", type: "game-fab", position: { x: 22, y: 71.56 } },     // 長方形机（左下上）
+  { id: "20", type: "game-fab", position: { x: 22, y: 64.44 } },     // 長方形机（左下中）
+  { id: "21", type: "game-fab", position: { x: 22, y: 57.33 } },     // 長方形机（左下下）
+  { id: "22", type: "robot", position: { x: 28, y: 46.67 } },        // 正方形机（ロボット専用・高優先）
+  { id: "23", type: "robot", position: { x: 41, y: 37.78 } },        // 正方形机（ロボット専用・高優先）
+  { id: "24", type: "robot", position: { x: 28, y: 28.89 } },        // 正方形机（ロボット専用・高優先）
 ];
 
 // 座席間の距離閾値（この距離以内なら隣接とみなす）
 const ADJACENCY_THRESHOLD = 15;
+
+/**
+ * ロボット席の優先度
+ */
+export const ROBOT_SEAT_PRIORITY = {
+  high: ["7", "8", "11", "12", "22", "23", "24"] as string[],  // 高優先席（授業しやすい）
+  low: ["9", "10"] as string[],                                 // 低優先席（可能な限り避ける）
+  floor: ["17", "18"] as string[],                              // 床席（最終手段のみ使用）
+};
+
+/**
+ * ゲーム・ファブ・プライム席の優先度
+ */
+export const GAME_FAB_PRIORITY = {
+  fourPeople: ["1", "2", "3", "4"],  // 4人の場合に優先する上部L字エリア
+} as const;
 
 /**
  * 2つの座席間の距離を計算
@@ -78,11 +96,11 @@ export const getSeatsByType = (type: "robot" | "game-fab"): string[] => {
 };
 
 /**
- * 時計回りの座席順序（1-23）
+ * 時計回りの座席順序（1-24）
  */
 export const CLOCKWISE_ORDER = [
   "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
-  "12", "13", "14", "15", "22", "23", "16", "17", "18", "19", "20", "21"
+  "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"
 ] as const;
 
 /**
@@ -125,13 +143,13 @@ export const PREFERRED_SEAT_GROUPS: PreferredSeatGroup[] = [
   // 左下混合エリア（ロボット+ゲーム/ファブ）
   {
     name: "左下混合エリア",
-    seats: ["17", "18", "19", "20"],
+    seats: ["20", "21", "22", "23"],
     preferForMixed: true,
   },
   // 左上混合エリア
   {
     name: "左上混合エリア",
-    seats: ["20", "21", "1", "2"],
+    seats: ["23", "24", "1", "2"],
     preferForMixed: true,
   },
 ];
@@ -141,37 +159,49 @@ export const PREFERRED_SEAT_GROUPS: PreferredSeatGroup[] = [
  * 物理的に離れすぎているペアは除外（座標距離 > 20は非隣接とみなす）
  * 除外ペア:
  *   - "5-6": 上部L字の右端から右上へ（距離26）
- *   - "15-22": 右下上から右下下へ（距離約12、隣接）
- *   - "23-16": 右下下から左下上へ（距離大、除外）
+ *   - "15-16": 右下上から右下中央へ（隣接）
+ *   - "16-17": 右下中央から右下右へ（隣接）
+ *   - "17-18": 右下右から右下左へ（隣接）
+ *   - "18-19": 右下左→左下上で距離大、除外
+ * 特別ペア（低優先席スキップ用）:
+ *   - "8-11": 座席8から11へのジャンプ（9,10をスキップ）
  */
 const CLOCKWISE_ADJACENT_PAIRS = new Set([
   "1-2", "2-3", "3-4", "4-5",
   // "5-6" は除外（上部L字右端→右上で距離26）
   "6-7", "7-8", "8-9", "9-10", "10-11",
+  "8-11",  // 特別: 座席8から11へのジャンプ（9,10をスキップ）
   "11-12", "12-13", "13-14", "14-15",
-  "15-22", "22-23",
-  // "23-16" は除外（右下下→左下上で距離大）
-  "16-17", "17-18", "18-19",
-  "19-20", "20-21", "21-1"
+  "15-16", "16-17", "17-18",
+  // "18-19" は除外（右下左→左下上で距離大）
+  "19-20", "20-21", "21-22",
+  "22-23", "23-24", "24-1"
 ]);
 
 /**
  * 2つの座席が時計回り順で隣接しているかチェック
+ * 特別ケース: 8→11（9,10をスキップ）も隣接として扱う
+ * @param allowSkipLowPriority trueの場合、8→11のジャンプを許可
  */
-export const isClockwiseAdjacent = (seat1: string, seat2: string): boolean => {
+export const isClockwiseAdjacent = (seat1: string, seat2: string, allowSkipLowPriority: boolean = true): boolean => {
   const idx1 = (CLOCKWISE_ORDER as readonly string[]).indexOf(seat1);
   const idx2 = (CLOCKWISE_ORDER as readonly string[]).indexOf(seat2);
 
   if (idx1 === -1 || idx2 === -1) return false;
 
-  // 時計回りで隣接（循環考慮）
-  const isNextInOrder = (idx2 === idx1 + 1) || (idx1 === 22 && idx2 === 0);
-
-  if (!isNextInOrder) return false;
-
-  // 明示的な隣接ペアリストをチェック
   const pairKey = `${seat1}-${seat2}`;
-  return CLOCKWISE_ADJACENT_PAIRS.has(pairKey);
+
+  // 8→11のジャンプを許可しない場合は除外
+  if (!allowSkipLowPriority && pairKey === "8-11") {
+    return false;
+  }
+
+  // 明示的な隣接ペアリストをチェック（8→11も含む）
+  if (CLOCKWISE_ADJACENT_PAIRS.has(pairKey)) {
+    return true;
+  }
+
+  return false;
 };
 
 // 後方互換性のために残しておく（使用されている場合）
