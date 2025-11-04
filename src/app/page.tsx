@@ -178,61 +178,71 @@ export default function Page() {
 
   const links = [
     {
-      label: "ホーム",
+      label: "ダッシュボード",
       href: "#",
-      icon: <Home className="text-slate-700 h-5 w-5 flex-shrink-0" />,
+      icon: (
+        <LayoutDashboard className="text-slate-700 h-5 w-5 flex-shrink-0" />
+      ),
     },
     {
-      label: "メンター",
+      label: "メンター設定",
       href: "#",
-      icon: <Users className="text-slate-700 h-5 w-5 flex-shrink-0" />,
+      icon: (
+        <Users className="text-slate-700 h-5 w-5 flex-shrink-0" />
+      ),
     },
     {
       label: "設定",
       href: "#",
-      icon: <Settings className="text-slate-700 h-5 w-5 flex-shrink-0" />,
+      icon: (
+        <Settings className="text-slate-700 h-5 w-5 flex-shrink-0" />
+      ),
     },
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200">
-      <div className={cn("mx-auto max-w-6xl px-4 sm:px-6 lg:px-8", !sidebarOpen && "balanced-left-padding") }>
-        <div className="flex flex-col md:flex-row gap-0 py-12">
-          <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
-            <SidebarBody className="justify-between gap-10">
-              <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-                <div className="mt-8 flex flex-col gap-2">
-                  {links.map((link, idx) => (
-                    <SidebarLink key={idx} link={link} />
-                  ))}
-                </div>
-              </div>
-            </SidebarBody>
-          </Sidebar>
-
-          {/* overlay removed */}
-
-          <div className="flex-1 overflow-x-hidden relative">
-            <section className="grid gap-6 lg:grid-cols-[360px,1fr] xl:grid-cols-[380px,1fr]">
-              <MentorPanel
-                mentors={state.mentors}
-                onAdd={handleAddMentor}
-                onRemove={handleRemoveMentor}
-                onUpdateCount={handleUpdateCount}
-                onCreate={handleCreate}
-                onResetAssignments={handleReset}
-                mentorColors={mentorColors}
-                assignments={state.assignments}
-              />
-              <ClassroomView
-                mentors={state.mentors}
-                mentorColors={mentorColors}
-                assignments={state.assignments}
-              />
-            </section>
+    <div className={cn("bg-gradient-to-br from-slate-100 via-white to-slate-200 w-full min-h-screen")}>
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
+        <SidebarBody className="justify-between gap-10">
+          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+            <div className="mt-8 flex flex-col gap-2">
+              {links.map((link, idx) => (
+                <SidebarLink key={idx} link={link} />
+              ))}
+            </div>
           </div>
+        </SidebarBody>
+      </Sidebar>
+      <motion.main
+        className="overflow-auto"
+        animate={{
+          marginLeft: sidebarOpen ? "300px" : "60px",
+        }}
+        transition={{
+          duration: 0.3,
+          ease: "easeInOut",
+        }}
+      >
+        <div className="container mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-6 lg:p-8">
+          <section className="grid gap-6 lg:grid-cols-[360px,1fr] xl:grid-cols-[380px,1fr]">
+            <MentorPanel
+              mentors={state.mentors}
+              onAdd={handleAddMentor}
+              onRemove={handleRemoveMentor}
+              onUpdateCount={handleUpdateCount}
+              onCreate={handleCreate}
+              onResetAssignments={handleReset}
+              mentorColors={mentorColors}
+              assignments={state.assignments}
+            />
+            <ClassroomView
+              mentors={state.mentors}
+              mentorColors={mentorColors}
+              assignments={state.assignments}
+            />
+          </section>
         </div>
-      </div>
-    </main>
+      </motion.main>
+    </div>
   );
 }
