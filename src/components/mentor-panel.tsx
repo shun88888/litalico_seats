@@ -1,4 +1,4 @@
-import { Minus, Plus, RefreshCw, Sparkles } from "lucide-react";
+import { Minus, Plus, RefreshCw } from "lucide-react";
 import { useMemo } from "react";
 
 import type { AssignmentResult, Mentor, CourseType } from "@/types/seating";
@@ -75,15 +75,6 @@ export const MentorPanel = ({
     return map;
   }, [mentors]);
 
-  const floorSummary = useMemo(() => {
-    if (!assignments?.floor) {
-      return null;
-    }
-    return {
-      ...assignments.floor,
-      ownerLabel: mentorLabelMap.get(assignments.floor.ownerMentorId),
-    };
-  }, [assignments, mentorLabelMap]);
 
   const renderMentorCard = (mentor: Mentor) => {
     const color = mentorColors[mentor.id];
@@ -245,27 +236,6 @@ export const MentorPanel = ({
                 </div>
               </div>
             ))}
-          </div>
-        )}
-        {floorSummary ? (
-          <div
-            className={cn(
-              "flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-semibold",
-              "bg-secondary/60 text-secondary-foreground"
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" />
-              <span>
-                床担当:{" "}
-                {floorSummary.ownerLabel ?? floorSummary.ownerMentorId}
-              </span>
-            </div>
-            <span>{floorSummary.total} 名</span>
-          </div>
-        ) : (
-          <div className="w-full rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
-            座席を作成すると床配置や例外処理の情報が表示されます。
           </div>
         )}
         <div className="flex w-full gap-2">

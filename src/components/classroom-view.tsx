@@ -1,12 +1,21 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import type { AssignmentResult, CourseType, Mentor } from "@/types/seating";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ClassroomViewProps {
   mentors: Mentor[];
   mentorColors: Record<string, string>;
   assignments: AssignmentResult | null;
+  onManualAssignSeat: (seatId: string, mentorId: string | null, course: CourseType) => void;
 }
 
 const DESK_BLOCKS = [
@@ -70,7 +79,9 @@ export const ClassroomView = ({
   mentors,
   mentorColors,
   assignments,
+  onManualAssignSeat,
 }: ClassroomViewProps) => {
+  const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
   const assignmentMap = useMemo(() => {
     if (!assignments) {
       return new Map<string, { mentorId: string; course: CourseType }>();
@@ -107,25 +118,6 @@ export const ClassroomView = ({
     return map;
   }, []);
 
-  const floorInfo = useMemo(() => {
-    if (!assignments?.floor) {
-      return null;
-    }
-    const ownerLabel =
-      mentorLabelMap.get(assignments.floor.ownerMentorId) ??
-      assignments.floor.ownerMentorId;
-    return {
-      ownerLabel,
-      color:
-        mentorColors[assignments.floor.ownerMentorId] ?? DEFAULT_SEAT_COLOR,
-      total: assignments.floor.total,
-      contributors: assignments.floor.contributors.map((entry) => ({
-        mentorLabel:
-          mentorLabelMap.get(entry.mentorId) ?? entry.mentorId,
-        count: entry.count,
-      })),
-    };
-  }, [assignments, mentorColors, mentorLabelMap]);
 
   const legendItems = mentors.map((mentor, index) => ({
     id: mentor.id,
@@ -189,55 +181,59 @@ export const ClassroomView = ({
                 : "未割り当て";
 
               return (
-                <div
-                  key={dot.seatId}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border border-white/70 shadow"
-                  style={{
-                    left: `${dot.left}%`,
-                    top: `${dot.top}%`,
-                    width: `${DOT_SIZE.width}%`,
-                    height: `${DOT_SIZE.height}%`,
-                    backgroundColor,
-                  }}
-                  title={title}
-                >
-                  <span className="text-[8px] font-bold text-gray-700 select-none">
-                    {dot.seatId}
-                  </span>
-                </div>
+                <DropdownMenu key={dot.seatId}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border border-white/70 shadow cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
+                      style={{
+                        left: `${dot.left}%`,
+                        top: `${dot.top}%`,
+                        width: `${DOT_SIZE.width}%`,
+                        height: `${DOT_SIZE.height}%`,
+                        backgroundColor,
+                      }}
+                      title={title}
+                      onClick={() => setSelectedSeat(dot.seatId)}
+                    >
+                      <span className="text-[8px] font-bold text-gray-700 select-none">
+                        {dot.seatId}
+                      </span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>座席 {dot.seatId} - メンターを選択</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {mentors.map((mentor) => (
+                      <DropdownMenuItem
+                        key={mentor.id}
+                        onClick={() => {
+                          const defaultCourse = seatType === "robot" ? "robot" : "game";
+                          onManualAssignSeat(dot.seatId, mentor.id, defaultCourse);
+                        }}
+                      >
+                        <span
+                          className="h-3 w-3 rounded-full mr-2 inline-block"
+                          style={{ backgroundColor: mentorColors[mentor.id] }}
+                        />
+                        {mentor.label}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        const defaultCourse = seatType === "robot" ? "robot" : "game";
+                        onManualAssignSeat(dot.seatId, null, defaultCourse);
+                      }}
+                    >
+                      クリア
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               );
             })}
           </div>
         </div>
       </CardContent>
-      {floorInfo && (
-        <div className="mx-auto mb-6 w-full max-w-[440px] rounded-xl border border-dashed border-slate-300 bg-white/80 px-4 py-3 text-xs text-slate-500">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <span
-                aria-hidden
-                className="inline-flex h-3 w-3 rounded-full border border-white/70"
-                style={{ backgroundColor: floorInfo.color }}
-              />
-              <span className="font-semibold">
-                床担当: {floorInfo.ownerLabel}
-              </span>
-            </div>
-            <span className="text-sm font-semibold text-slate-600">
-              {floorInfo.total} 名
-            </span>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
-            {floorInfo.contributors.map((contributor) => (
-              <span
-                key={`${floorInfo.ownerLabel}-${contributor.mentorLabel}`}
-              >
-                {contributor.mentorLabel} ({contributor.count})
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
     </Card>
   );
 };

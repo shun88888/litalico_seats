@@ -56,7 +56,14 @@ type SeatingAction =
       name: string;
     }
   | { type: "set-assignments"; assignments: AssignmentResult }
-  | { type: "reset-assignments" };
+  | { type: "reset-assignments" }
+  | { type: "reset-all" }
+  | {
+      type: "manual-assign-seat";
+      seatId: string;
+      mentorId: string | null;
+      course: CourseType;
+    };
 
 const createMentor = (index: number): Mentor => ({
   id: `mentor-${index}`,
@@ -160,6 +167,42 @@ const seatingReducer = (state: SeatingState, action: SeatingAction): SeatingStat
         ...state,
         assignments: null,
       };
+    case "reset-all":
+      return initialState;
+    case "manual-assign-seat": {
+      // 自動配置が未実施の場合は、空の配置結果を作成
+      const currentAssignments = state.assignments ?? {
+        assignments: [],
+        floor: null,
+        errors: [],
+      };
+
+      // 既存の座席割り当てから該当座席を削除
+      const filteredAssignments = currentAssignments.assignments.filter(
+        (a) => a.seatId !== action.seatId
+      );
+
+      // メンターが指定されている場合のみ新しい割り当てを追加
+      const newAssignments =
+        action.mentorId !== null
+          ? [
+              ...filteredAssignments,
+              {
+                seatId: action.seatId,
+                mentorId: action.mentorId,
+                course: action.course,
+              },
+            ]
+          : filteredAssignments;
+
+      return {
+        ...state,
+        assignments: {
+          ...currentAssignments,
+          assignments: newAssignments,
+        },
+      };
+    }
     default:
       return state;
   }
@@ -230,7 +273,15 @@ export default function Page() {
     dispatch({ type: "set-assignments", assignments });
   };
 
-  const handleReset = () => dispatch({ type: "reset-assignments" });
+  const handleReset = () => dispatch({ type: "reset-all" });
+
+  const handleManualAssignSeat = (
+    seatId: string,
+    mentorId: string | null,
+    course: CourseType
+  ) => {
+    dispatch({ type: "manual-assign-seat", seatId, mentorId, course });
+  };
 
   const links = [
     {
@@ -300,6 +351,7 @@ export default function Page() {
               mentors={state.mentors}
               mentorColors={mentorColors}
               assignments={state.assignments}
+              onManualAssignSeat={handleManualAssignSeat}
             />
           </section>
         </div>

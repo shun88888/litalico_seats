@@ -28,12 +28,6 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
   const assignedSeats = new Set<string>();
   const errors: AssignmentError[] = [];
 
-  // 床席の管理
-  let floorOwnerId: string | null = null;
-  const floorContributors = new Map<string, number>();
-  let floorTotal = 0;
-  const floorSeatIds: string[] = [];
-
   // ========================================
   // ユーティリティ関数
   // ========================================
@@ -53,53 +47,59 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
     assignedSeats.add(seatId);
   };
 
-  /**
-   * 床席に配置（ロボット生徒のみ、最終手段）
-   */
-  const assignToFloor = (mentorId: string, count: number) => {
-    if (count <= 0) return;
-    if (!floorOwnerId) floorOwnerId = mentorId;
-
-    const availableFloorSeats = ["17", "18"].filter(id => isAvailable(id));
-    let assigned = 0;
-
-    for (const seatId of availableFloorSeats) {
-      if (assigned >= count) break;
-      floorSeatIds.push(seatId);
-      assignSeat(seatId, mentorId, "robot");
-      assigned++;
-    }
-
-    floorTotal += count;
-    const current = floorContributors.get(mentorId) ?? 0;
-    floorContributors.set(mentorId, current + count);
-  };
-
   // ========================================
   // 座席配置のコアロジック
   // ========================================
+
+  /**
+   * 座席配置に座席9と10が連続で含まれているかチェック
+   */
+  const hasConsecutive9And10 = (assignments: SeatAssignment[]): boolean => {
+    const seatIds = assignments.map(a => a.seatId);
+    const has9 = seatIds.includes("9");
+    const has10 = seatIds.includes("10");
+    return has9 && has10;
+  };
 
   /**
    * 時計回り順で連続した座席を探す
    * @param requiredCounts 各コースの必要人数
    * @param allowLowPriority trueの場合、座席9,10も使用可能
    * @param useSeat5 trueの場合、座席5も使用可能
+   * @param avoidLowPriority trueの場合、座席9,10を可能な限り避ける
+   * @param excludeFloor trueの場合、床席17,18を除外
    * @returns 座席配置結果 or null
    */
   const findContinuousSeats = (
     requiredCounts: CourseCounts,
     allowLowPriority: boolean = false,
-    useSeat5: boolean = true
+    useSeat5: boolean = true,
+    avoidLowPriority: boolean = false,
+    excludeFloor: boolean = false
   ): SeatAssignment[] | null => {
     const totalNeeded = requiredCounts.robot + requiredCounts.game + requiredCounts.fab + requiredCounts.prime;
+    let fallbackResult: SeatAssignment[] | null = null;  // 座席9,10連続を含む配置（fallback用）
 
     // 全ての位置から連続座席を探す（時計回り順）
     for (let startIdx = 0; startIdx < 24; startIdx++) {
-      const result = tryFromPosition(startIdx, totalNeeded, requiredCounts, allowLowPriority, useSeat5);
-      if (result) return result;
+      const result = tryFromPosition(startIdx, totalNeeded, requiredCounts, allowLowPriority, useSeat5, avoidLowPriority, excludeFloor);
+
+      if (result) {
+        // 座席9,10が連続で含まれているかチェック
+        if (hasConsecutive9And10(result)) {
+          // 座席9,10連続の配置はfallbackとして保存し、探索を続ける
+          if (!fallbackResult) {
+            fallbackResult = result;
+          }
+        } else {
+          // 座席9,10連続なしの配置が見つかった → 即座に採用
+          return result;
+        }
+      }
     }
 
-    return null;
+    // 座席9,10連続なしの配置が見つからなかった場合、fallbackを返す
+    return fallbackResult;
   };
 
   /**
@@ -108,13 +108,17 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
    * ロボット人数による戦略:
    * - 7人以下: 座席9,10を避けて8→11にジャンプ（allowLowPriority=false時）
    * - 8人以上: 座席9,10も使用（allowLowPriority=true）
+   * - avoidLowPriority=true: 座席9,10を可能な限り避ける
+   * - excludeFloor=true: 床席17,18を除外
    */
   const tryFromPosition = (
     startIdx: number,
     totalNeeded: number,
     requiredCounts: CourseCounts,
     allowLowPriority: boolean,
-    useSeat5: boolean
+    useSeat5: boolean,
+    avoidLowPriority: boolean,
+    excludeFloor: boolean
   ): SeatAssignment[] | null => {
     const candidates: string[] = [];
     let currentIdx = startIdx;
@@ -135,15 +139,39 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
         continue;
       }
 
-      // 床席は除外
-      if (ROBOT_SEAT_PRIORITY.floor.includes(seatId)) {
+      // 床席を除外（excludeFloor=trueの場合のみ）
+      if (excludeFloor && ROBOT_SEAT_PRIORITY.floor.includes(seatId)) {
         candidates.length = 0;
         currentIdx++;
         continue;
       }
 
-      // 座席5のスキップ処理
+      // 座席5のスキップ処理（開始位置としても避ける）
       if (!useSeat5 && seatId === "5") {
+        candidates.length = 0;
+        currentIdx++;
+        continue;
+      }
+
+      // 座席9,10の回避処理（開始位置としても避ける）
+      // - avoidLowPriority=true: 座席9,10を完全に避ける
+      // - shouldSkipLowPriority=true: 座席8の後の9は11にジャンプ、それ以外の9,10は避ける
+      if (avoidLowPriority && ROBOT_SEAT_PRIORITY.low.includes(seatId)) {
+        candidates.length = 0;
+        currentIdx++;
+        continue;
+      }
+
+      if (shouldSkipLowPriority && ROBOT_SEAT_PRIORITY.low.includes(seatId)) {
+        // 座席8の後に9が来た場合のみ、11へのジャンプを試みる
+        if (candidates.length > 0 && candidates[candidates.length - 1] === "8" && seatId === "9") {
+          if (isAvailable("11") && !ROBOT_SEAT_PRIORITY.floor.includes("11")) {
+            candidates.push("11");
+            currentIdx = 10; // 座席11のインデックスに移動
+            continue;
+          }
+        }
+        // その他の場合は座席9,10をスキップ
         candidates.length = 0;
         currentIdx++;
         continue;
@@ -158,27 +186,6 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
 
       // 前の席との隣接チェック
       const prevSeat = candidates[candidates.length - 1];
-
-      // ロボット7人以下で座席8の後に9が来た場合、11にジャンプを試みる
-      if (shouldSkipLowPriority && prevSeat === "8" && seatId === "9") {
-        if (isAvailable("11") && !ROBOT_SEAT_PRIORITY.floor.includes("11")) {
-          candidates.push("11");
-          currentIdx = 10; // 座席11のインデックスに移動
-          continue;
-        } else {
-          candidates.length = 0;
-          candidates.push(seatId);
-          currentIdx++;
-          continue;
-        }
-      }
-
-      // 低優先席（9, 10）のスキップ処理
-      if (shouldSkipLowPriority && ROBOT_SEAT_PRIORITY.low.includes(seatId)) {
-        candidates.length = 0;
-        currentIdx++;
-        continue;
-      }
 
       // 通常の隣接チェック（8→11ジャンプなし）
       const isAdjacent = isClockwiseAdjacent(prevSeat, seatId, false);
@@ -330,26 +337,43 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
   });
 
   // ========================================
-  // メンター毎に座席を配置
+  // メンター毎に座席を配置（3段階探索）
   // ========================================
   for (const mentor of sortedMentors) {
     let continuousAssignments: SeatAssignment[] | null = null;
 
-    // 全体戦略に基づいて座席を配置
-    if (useAllRobotSeats) {
-      // 授業全体でロボット8人以上: 座席9,10も使用
-      console.log(`[配置] ${mentor.label}: 座席9,10も使用`);
-      continuousAssignments = findContinuousSeats(mentor.counts, true, useSeat5);
-    } else {
-      // 授業全体でロボット7人以下: 座席9,10を避ける
-      console.log(`[配置] ${mentor.label}: 座席9,10を避ける`);
-      continuousAssignments = findContinuousSeats(mentor.counts, false, useSeat5);
+    // 【第1段階】座席9,10と床席17,18を避けて探す
+    console.log(`[第1段階] ${mentor.label}: 座席9,10と床席17,18を避けて探索`);
+    continuousAssignments = findContinuousSeats(
+      mentor.counts,
+      false,      // allowLowPriority: 座席9,10を使わない
+      useSeat5,
+      false,      // avoidLowPriority: 不要（allowLowPriorityがfalseなので）
+      true        // excludeFloor: 床席17,18を除外
+    );
 
-      // 失敗したら座席9,10も含めて再試行
-      if (!continuousAssignments) {
-        console.log(`[再試行] ${mentor.label}: 座席9,10も含めて再試行`);
-        continuousAssignments = findContinuousSeats(mentor.counts, true, useSeat5);
-      }
+    // 【第2段階】座席9,10は使うが、床席17,18は避ける
+    if (!continuousAssignments) {
+      console.log(`[第2段階] ${mentor.label}: 座席9,10を使用、床席17,18は除外`);
+      continuousAssignments = findContinuousSeats(
+        mentor.counts,
+        true,       // allowLowPriority: 座席9,10を使う
+        useSeat5,
+        false,      // avoidLowPriority: 座席9,10を普通に使う
+        true        // excludeFloor: 床席17,18を除外
+      );
+    }
+
+    // 【第3段階】床席17,18も含めて探す（最終手段）
+    if (!continuousAssignments) {
+      console.log(`[第3段階] ${mentor.label}: 床席17,18も含めて探索`);
+      continuousAssignments = findContinuousSeats(
+        mentor.counts,
+        true,       // allowLowPriority: 座席9,10を使う
+        useSeat5,
+        false,      // avoidLowPriority: 座席9,10を普通に使う
+        false       // excludeFloor: 床席17,18も使用可能
+      );
     }
 
     // 配置成功
@@ -362,24 +386,12 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
       continue;
     }
 
-    // 配置失敗: 床席を使用
-    console.warn(`[警告] ${mentor.label}: 連続座席が見つかりません。床席を使用します。`);
-
-    // ロボット生徒を床に配置
-    if (mentor.counts.robot > 0) {
-      assignToFloor(mentor.id, mentor.counts.robot);
-    }
-
-    // エラーとして記録
+    // 配置失敗: エラーとして記録
+    console.error(`[配置失敗] ${mentor.label}: 連続座席が見つかりませんでした`);
     errors.push({
       mentorId: mentor.id,
       mentorLabel: mentor.label,
-      unassignedCounts: {
-        robot: 0,
-        game: mentor.counts.game,
-        fab: mentor.counts.fab,
-        prime: mentor.counts.prime,
-      },
+      unassignedCounts: mentor.counts,
       reason: "連続した座席を確保できませんでした。",
     });
   }
@@ -387,21 +399,9 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
   // ========================================
   // 結果を返す
   // ========================================
-  const floor: FloorAllocation | null =
-    floorOwnerId && floorTotal > 0
-      ? {
-          ownerMentorId: floorOwnerId,
-          total: floorTotal,
-          contributors: Array.from(floorContributors.entries()).map(
-            ([mentorId, count]) => ({ mentorId, count })
-          ),
-          seatIds: floorSeatIds,
-        }
-      : null;
-
   return {
     assignments,
-    floor,
+    floor: null,  // 床担当の概念を削除
     errors,
   };
 };
