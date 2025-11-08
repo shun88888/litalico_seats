@@ -43,7 +43,7 @@ export function MentorCard({
 
       <CardHeader className="pl-6">
         <CardTitle className="text-lg flex items-center justify-between">
-          {mentor.label.startsWith("メンター") ? mentor.id : mentor.label}
+          {mentor.label}
           {canRemove && (
             <Button
               variant="ghost"
