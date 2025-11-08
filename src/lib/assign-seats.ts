@@ -397,11 +397,44 @@ export const assignSeats = (mentors: Mentor[]): AssignmentResult => {
   }
 
   // ========================================
+  // 床席使用チェック
+  // ========================================
+  const floorSeatIds = ["17", "18"];
+  const floorAssignments = assignments.filter(a => floorSeatIds.includes(a.seatId));
+
+  let floor = null;
+  if (floorAssignments.length > 0) {
+    // 床席を使用しているメンターごとの人数を集計
+    const contributorsMap = new Map<string, number>();
+    floorAssignments.forEach(assignment => {
+      const count = contributorsMap.get(assignment.mentorId) || 0;
+      contributorsMap.set(assignment.mentorId, count + 1);
+    });
+
+    const contributors = Array.from(contributorsMap.entries()).map(([mentorId, count]) => ({
+      mentorId,
+      count,
+    }));
+
+    // 最も多く使用しているメンターをオーナーとする
+    const owner = contributors.reduce((max, current) =>
+      current.count > max.count ? current : max
+    );
+
+    floor = {
+      ownerMentorId: owner.mentorId,
+      total: floorAssignments.length,
+      contributors,
+      seatIds: floorAssignments.map(a => a.seatId),
+    };
+  }
+
+  // ========================================
   // 結果を返す
   // ========================================
   return {
     assignments,
-    floor: null,  // 床担当の概念を削除
+    floor,
     errors,
   };
 };

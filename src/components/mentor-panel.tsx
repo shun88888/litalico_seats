@@ -153,11 +153,11 @@ export const MentorPanel = ({
         <CardTitle className="text-lg font-semibold text-foreground">
           メンター設定
         </CardTitle>
-        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+        <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground">
           {COURSE_ORDER.map((course) => (
-            <div key={course} className="rounded-md bg-background/70 px-3 py-2">
-              <p className="font-medium text-foreground/70">{COURSE_LABELS[course]}</p>
-              <p className="text-lg font-semibold text-foreground">
+            <div key={course} className="rounded-md bg-background/70 px-2 py-2">
+              <p className="font-medium text-foreground/70 text-[10px]">{COURSE_LABELS[course]}</p>
+              <p className="text-base font-semibold text-foreground">
                 {totalByCourse[course]}
               </p>
             </div>
@@ -214,30 +214,6 @@ export const MentorPanel = ({
         </Tabs>
       </CardContent>
       <CardFooter className="flex flex-col gap-2 border-t border-border/60 bg-background/40 py-4">
-        {assignments?.errors && assignments.errors.length > 0 && (
-          <div className="w-full space-y-2">
-            {assignments.errors.map((error) => (
-              <div
-                key={error.mentorId}
-                className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-xs"
-              >
-                <div className="font-semibold text-red-700 mb-1">
-                  ⚠️ {error.mentorLabel}: 配置エラー
-                </div>
-                <div className="text-red-600 text-[11px]">
-                  配置できなかった生徒:
-                  {error.unassignedCounts.robot > 0 && ` ロボット${error.unassignedCounts.robot}人`}
-                  {error.unassignedCounts.game > 0 && ` ゲーム${error.unassignedCounts.game}人`}
-                  {error.unassignedCounts.fab > 0 && ` デジファブ${error.unassignedCounts.fab}人`}
-                  {error.unassignedCounts.prime > 0 && ` プライム${error.unassignedCounts.prime}人`}
-                </div>
-                <div className="text-red-600 text-[11px] mt-1">
-                  {error.reason}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
         <div className="flex w-full gap-2">
           <Button type="button" className="flex-1" onClick={onCreate}>
             作成

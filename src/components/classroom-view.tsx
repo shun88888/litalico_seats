@@ -8,6 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -25,7 +28,10 @@ const DESK_BLOCKS = [
   { id: "left-mid-square", left: 18, top: 31.11, width: 20, height: 13.33 },
   { id: "right-upper-square", left:70, top: 21.78, width: 20, height: 13.33 },
   { id: "right-lower-square", left: 70, top: 43.56, width: 20, height: 13.33 },
-  { id: "left-vertical-lower", left: 5, top: 53.33, width: 14, height: 22.22 },
+  { id: "left-bottom-vertical1", left: 5, top: 53.33, width: 13, height: 11.6 },
+  { id: "left-bottom-vertical2", left: 5, top: 65.94, width: 13, height: 11.6 },
+  { id: "left-bottom-vertical3", left: 5, top: 78.56, width: 13, height: 11.6 },
+  //{ id: "left-vertical-lower", left: 5, top: 53.33, width: 14, height: 22.22 },
   { id: "right-vertical-lower", left: 82, top: 62.22, width: 13, height: 22.22 },
   { id: "right-bottom-vertical", left: 82, top: 85.44, width: 13, height: 11.6 },
 ];
@@ -49,9 +55,9 @@ const SEAT_DOTS = [
   { seatId: "16", left: 79, top: 90.67 },
   { seatId: "17", left: 45, top: 65 },
   { seatId: "18", left: 55, top: 65 },
-  { seatId: "19", left: 22, top: 71.56 },
-  { seatId: "20", left: 22, top: 64.44 },
-  { seatId: "21", left: 22, top: 57.33 },
+  { seatId: "19", left: 22, top: 84.44 },
+  { seatId: "20", left: 22, top: 71.94 },
+  { seatId: "21", left: 22, top: 59.11 },
   { seatId: "22", left: 28, top: 46.67 },
   { seatId: "23", left: 41, top: 37.78 },
   { seatId: "24", left: 28, top: 28.89 },
@@ -178,24 +184,24 @@ export const ClassroomView = ({
         </div>
       </CardHeader>
       <CardContent className="flex-1">
-        <div className="relative mx-auto mt-2 w-full max-w-[440px]">
+        <div className="relative mx-auto mt-2 w-full max-w-[400px]">
           <div
             className="relative w-full overflow-hidden rounded-[36px] border border-slate-200 bg-white shadow-inner"
             style={{ aspectRatio: "600 / 900" }}
           >
-            {DESK_BLOCKS.map((block) => (
-              <div
-                key={block.id}
-                className="absolute rounded-2xl bg-gray-200"
-                style={{
-                  left: `${block.left}%`,
-                  top: `${block.top}%`,
-                  width: `${block.width}%`,
-                  height: `${block.height}%`,
-                }}
-              />
-            ))}
-            {SEAT_DOTS.map((dot) => {
+          {DESK_BLOCKS.map((block) => (
+            <div
+              key={block.id}
+              className="absolute rounded-2xl bg-gray-200"
+              style={{
+                left: `${block.left}%`,
+                top: `${block.top}%`,
+                width: `${block.width}%`,
+                height: `${block.height}%`,
+              }}
+            />
+          ))}
+          {SEAT_DOTS.map((dot) => {
               const occupant = assignmentMap.get(dot.seatId);
               const backgroundColor = occupant
                 ? mentorColors[occupant.mentorId] ?? OCCUPIED_FALLBACK_COLOR
@@ -238,11 +244,105 @@ export const ClassroomView = ({
                       const defaultCourse = seatType === "robot" ? "robot" : "game";
                       const remainingCount = remaining ? remaining[defaultCourse] : 0;
 
+                      // 長方形の机（game, fab, prime用）の場合はサブメニューでコース選択
+                      if (seatType === "game") {
+                        return (
+                          <DropdownMenuSub key={mentor.id}>
+                            <DropdownMenuSubTrigger>
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center">
+                                  <span
+                                    className="h-3 w-3 rounded-full mr-2 inline-block"
+                                    style={{ backgroundColor: mentorColors[mentor.id] }}
+                                  />
+                                  {mentor.label}
+                                </div>
+                                <span className="ml-4 text-xs">
+                                  残り:
+                                  <span className={
+                                    remaining && remaining.game > 0
+                                      ? "text-red-600 font-semibold"
+                                      : remaining && remaining.game < 0
+                                      ? "text-blue-600 font-semibold"
+                                      : "text-muted-foreground"
+                                  }> PG {remaining?.game || 0}</span>
+                                  <span className={
+                                    remaining && remaining.fab > 0
+                                      ? "text-red-600 font-semibold"
+                                      : remaining && remaining.fab < 0
+                                      ? "text-blue-600 font-semibold"
+                                      : "text-muted-foreground"
+                                  }> DF {remaining?.fab || 0}</span>
+                                  <span className={
+                                    remaining && remaining.prime > 0
+                                      ? "text-red-600 font-semibold"
+                                      : remaining && remaining.prime < 0
+                                      ? "text-blue-600 font-semibold"
+                                      : "text-muted-foreground"
+                                  }> RT {remaining?.prime || 0}</span>
+                                </span>
+                              </div>
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  onManualAssignSeat(dot.seatId, mentor.id, "game");
+                                }}
+                                disabled={!remaining || remaining.game === 0}
+                              >
+                                <span className={
+                                  remaining && remaining.game > 0
+                                    ? "text-red-600 font-semibold"
+                                    : remaining && remaining.game < 0
+                                    ? "text-blue-600 font-semibold"
+                                    : ""
+                                }>
+                                  ゲーム (PG) - 残り{remaining?.game || 0}人
+                                </span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  onManualAssignSeat(dot.seatId, mentor.id, "fab");
+                                }}
+                                disabled={!remaining || remaining.fab === 0}
+                              >
+                                <span className={
+                                  remaining && remaining.fab > 0
+                                    ? "text-red-600 font-semibold"
+                                    : remaining && remaining.fab < 0
+                                    ? "text-blue-600 font-semibold"
+                                    : ""
+                                }>
+                                  デジファブ (DF) - 残り{remaining?.fab || 0}人
+                                </span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  onManualAssignSeat(dot.seatId, mentor.id, "prime");
+                                }}
+                                disabled={!remaining || remaining.prime === 0}
+                              >
+                                <span className={
+                                  remaining && remaining.prime > 0
+                                    ? "text-red-600 font-semibold"
+                                    : remaining && remaining.prime < 0
+                                    ? "text-blue-600 font-semibold"
+                                    : ""
+                                }>
+                                  プライム (RT) - 残り{remaining?.prime || 0}人
+                                </span>
+                              </DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuSub>
+                        );
+                      }
+
+                      // ロボット専用席の場合はそのまま配置
                       return (
                         <DropdownMenuItem
                           key={mentor.id}
                           onClick={() => {
-                            onManualAssignSeat(dot.seatId, mentor.id, defaultCourse);
+                            onManualAssignSeat(dot.seatId, mentor.id, "robot");
                           }}
                         >
                           <div className="flex items-center justify-between w-full">
@@ -253,8 +353,15 @@ export const ClassroomView = ({
                               />
                               {mentor.label}
                             </div>
-                            <span className="ml-4 text-xs text-muted-foreground">
-                              残り: {remaining ? `PG ${remaining.game} DF ${remaining.fab} RC ${remaining.robot} RT ${remaining.prime}` : '0'}
+                            <span className="ml-4 text-xs">
+                              残り:
+                              <span className={
+                                remaining && remaining.robot > 0
+                                  ? "text-red-600 font-semibold"
+                                  : remaining && remaining.robot < 0
+                                  ? "text-blue-600 font-semibold"
+                                  : "text-muted-foreground"
+                              }> RC {remaining?.robot || 0}</span>
                             </span>
                           </div>
                         </DropdownMenuItem>
@@ -283,8 +390,8 @@ export const ClassroomView = ({
                   </span>
                 )}
               </React.Fragment>
-              );
-            })}
+            );
+          })}
           </div>
         </div>
       </CardContent>

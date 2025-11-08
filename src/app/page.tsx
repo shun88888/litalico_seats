@@ -1,218 +1,18 @@
 "use client";
 
-import { useMemo, useReducer, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { LayoutDashboard, Users, Settings, Home } from "lucide-react";
 
 import { ClassroomView } from "@/components/classroom-view";
 import { MentorPanel } from "@/components/mentor-panel";
+import { MemoPanel } from "@/components/memo-panel";
 import { assignSeats } from "@/lib/assign-seats";
-import { getMentorColor } from "@/lib/colors";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import type {
-  AssignmentResult,
-  CourseType,
-  Mentor,
-} from "@/types/seating";
-
-// Available mentor names
-const MENTOR_NAMES = [
-  "か@ー",
-  "わか@@",
-  "し@す",
-  "あ@",
-  "もっ@ー",
-  "す@",
-  "あー@@",
-  "も@",
-  "きな@",
-  "しょ@@",
-  "なか@@@",
-  "ヘルプ1",
-  "ヘルプ2",
-  "ヘルプ3",
-];
-
-interface SeatingState {
-  mentors: Mentor[];
-  assignments: AssignmentResult | null;
-  counter: number;
-}
-
-type SeatingAction =
-  | { type: "add-mentor" }
-  | { type: "remove-mentor"; mentorId: string }
-  | {
-      type: "update-count";
-      mentorId: string;
-      course: CourseType;
-      value: number;
-    }
-  | {
-      type: "update-mentor-name";
-      mentorId: string;
-      name: string;
-    }
-  | { type: "set-assignments"; assignments: AssignmentResult }
-  | { type: "reset-assignments" }
-  | { type: "reset-all" }
-  | {
-      type: "manual-assign-seat";
-      seatId: string;
-      mentorId: string | null;
-      course: CourseType;
-    };
-
-const createMentor = (index: number): Mentor => ({
-  id: `mentor-${index}`,
-  label: `メンター${index}`,
-  counts: {
-    robot: 0,
-    game: 0,
-    fab: 0,
-    prime: 0,
-  },
-});
-
-/**
- * 既存のメンターから空いている最小の番号を見つける
- */
-const findNextAvailableNumber = (mentors: Mentor[]): number => {
-  // 既存のメンター番号を抽出（mentor-1 → 1）
-  const existingNumbers = mentors
-    .map(m => {
-      const match = m.id.match(/mentor-(\d+)/);
-      return match ? parseInt(match[1], 10) : 0;
-    })
-    .filter(n => n > 0);
-
-  // 1から順番にチェックして、使われていない最小の番号を返す
-  let number = 1;
-  while (existingNumbers.includes(number)) {
-    number++;
-  }
-  return number;
-};
-
-const seatingReducer = (state: SeatingState, action: SeatingAction): SeatingState => {
-  switch (action.type) {
-    case "add-mentor": {
-      // 空いている最小の番号を見つける
-      const nextNumber = findNextAvailableNumber(state.mentors);
-      const nextMentors = [
-        ...state.mentors,
-        createMentor(nextNumber),
-      ];
-      return {
-        mentors: nextMentors,
-        assignments: null,
-        counter: state.counter, // counterは使わなくなったが、互換性のため保持
-      };
-    }
-    case "remove-mentor": {
-      if (state.mentors.length <= 1) {
-        return state;
-      }
-      const filtered = state.mentors.filter(
-        (mentor) => mentor.id !== action.mentorId
-      );
-      return {
-        mentors: filtered,
-        assignments: null,
-        counter: state.counter,
-      };
-    }
-    case "update-count": {
-      const updated = state.mentors.map((mentor) =>
-        mentor.id === action.mentorId
-          ? {
-              ...mentor,
-              counts: {
-                ...mentor.counts,
-                [action.course]: action.value,
-              },
-            }
-          : mentor
-      );
-      return {
-        mentors: updated,
-        assignments: null,
-        counter: state.counter,
-      };
-    }
-    case "update-mentor-name": {
-      const updatedMentors = state.mentors.map((mentor) =>
-        mentor.id === action.mentorId
-          ? {
-              ...mentor,
-              label: action.name,
-            }
-          : mentor
-      );
-      return {
-        mentors: updatedMentors,
-        assignments: null,
-        counter: state.counter,
-      };
-    }
-    case "set-assignments":
-      return {
-        ...state,
-        assignments: action.assignments,
-      };
-    case "reset-assignments":
-      return {
-        ...state,
-        assignments: null,
-      };
-    case "reset-all":
-      return initialState;
-    case "manual-assign-seat": {
-      // 自動配置が未実施の場合は、空の配置結果を作成
-      const currentAssignments = state.assignments ?? {
-        assignments: [],
-        floor: null,
-        errors: [],
-      };
-
-      // 既存の座席割り当てから該当座席を削除
-      const filteredAssignments = currentAssignments.assignments.filter(
-        (a) => a.seatId !== action.seatId
-      );
-
-      // メンターが指定されている場合のみ新しい割り当てを追加
-      const newAssignments =
-        action.mentorId !== null
-          ? [
-              ...filteredAssignments,
-              {
-                seatId: action.seatId,
-                mentorId: action.mentorId,
-                course: action.course,
-              },
-            ]
-          : filteredAssignments;
-
-      return {
-        ...state,
-        assignments: {
-          ...currentAssignments,
-          assignments: newAssignments,
-        },
-      };
-    }
-    default:
-      return state;
-  }
-};
-
-const initialState: SeatingState = {
-  mentors: [createMentor(1)],
-  assignments: null,
-  counter: 1,
-};
+import { useSeating } from "@/context/seating-context";
+import type { CourseType } from "@/types/seating";
 
 const Logo = () => {
   return (
@@ -244,15 +44,8 @@ const LogoIcon = () => {
 };
 
 export default function Page() {
-  const [state, dispatch] = useReducer(seatingReducer, initialState);
+  const { state, dispatch, mentorColors, availableMentorNames } = useSeating();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const mentorColors = useMemo(() => {
-    return state.mentors.reduce<Record<string, string>>((acc, mentor) => {
-      acc[mentor.id] = getMentorColor(mentor.id);
-      return acc;
-    }, {});
-  }, [state.mentors]);
 
   const handleAddMentor = () => dispatch({ type: "add-mentor" });
 
@@ -271,6 +64,14 @@ export default function Page() {
   const handleCreate = () => {
     const assignments = assignSeats(state.mentors);
     dispatch({ type: "set-assignments", assignments });
+
+    // 教室座席図にスクロール
+    setTimeout(() => {
+      const element = document.getElementById("classroom-view");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 100);
   };
 
   const handleReset = () => dispatch({ type: "reset-all" });
@@ -286,21 +87,21 @@ export default function Page() {
   const links = [
     {
       label: "ダッシュボード",
-      href: "#",
+      href: "/",
       icon: (
         <LayoutDashboard className="text-slate-700 h-5 w-5 flex-shrink-0" />
       ),
     },
     {
       label: "メンター設定",
-      href: "#",
+      href: "/mentor-settings",
       icon: (
         <Users className="text-slate-700 h-5 w-5 flex-shrink-0" />
       ),
     },
     {
       label: "設定",
-      href: "#",
+      href: "/settings",
       icon: (
         <Settings className="text-slate-700 h-5 w-5 flex-shrink-0" />
       ),
@@ -333,8 +134,9 @@ export default function Page() {
           ease: "easeInOut",
         }}
       >
-        <div className="container mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-6 lg:p-8">
-          <section className="grid gap-6 lg:grid-cols-[360px,1fr] xl:grid-cols-[380px,1fr]">
+        <div className="container mx-auto flex max-w-7xl flex-col gap-6 p-4 sm:p-6 lg:p-8">
+          {/* 上段: メンター設定 + メモ欄 */}
+          <section className="grid gap-6 lg:grid-cols-2">
             <MentorPanel
               mentors={state.mentors}
               onAdd={handleAddMentor}
@@ -345,8 +147,13 @@ export default function Page() {
               onResetAssignments={handleReset}
               mentorColors={mentorColors}
               assignments={state.assignments}
-              availableMentorNames={MENTOR_NAMES}
+              availableMentorNames={availableMentorNames}
             />
+            <MemoPanel />
+          </section>
+
+          {/* 下段: 教室座席図 */}
+          <section id="classroom-view">
             <ClassroomView
               mentors={state.mentors}
               mentorColors={mentorColors}
@@ -354,6 +161,57 @@ export default function Page() {
               onManualAssignSeat={handleManualAssignSeat}
             />
           </section>
+
+          {/* エラー・警告表示 */}
+          {((state.assignments?.errors && state.assignments.errors.length > 0) ||
+            state.assignments?.floor) && (
+            <section className="mt-2">
+              <div className="space-y-2">
+                {/* 床席使用の警告 */}
+                {state.assignments?.floor && (
+                  <div className="rounded-lg bg-yellow-50 border border-yellow-300 px-4 py-3 shadow-sm">
+                    <div className="font-semibold text-yellow-800 mb-2 text-sm">
+                      ⚠️ 床席を使用しています
+                    </div>
+                    <div className="text-yellow-700 text-xs">
+                      座席{state.assignments.floor.seatIds.join(", ")}を床席として使用しています。
+                      {state.assignments.floor.contributors.length > 0 && (
+                        <>
+                          <br />
+                          使用メンター: {state.assignments.floor.contributors.map(c => {
+                            const mentor = state.mentors.find(m => m.id === c.mentorId);
+                            return `${mentor?.label || c.mentorId}(${c.count}人)`;
+                          }).join(", ")}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* 配置エラー */}
+                {state.assignments?.errors && state.assignments.errors.map((error) => (
+                  <div
+                    key={error.mentorId}
+                    className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 shadow-sm"
+                  >
+                    <div className="font-semibold text-red-700 mb-2 text-sm">
+                      ⚠️ {error.mentorLabel}: 配置エラー
+                    </div>
+                    <div className="text-red-600 text-xs">
+                      配置できなかった生徒:
+                      {error.unassignedCounts.robot > 0 && ` ロボット${error.unassignedCounts.robot}人`}
+                      {error.unassignedCounts.game > 0 && ` ゲーム${error.unassignedCounts.game}人`}
+                      {error.unassignedCounts.fab > 0 && ` デジファブ${error.unassignedCounts.fab}人`}
+                      {error.unassignedCounts.prime > 0 && ` プライム${error.unassignedCounts.prime}人`}
+                    </div>
+                    <div className="text-red-600 text-xs mt-1">
+                      {error.reason}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </motion.main>
     </div>
