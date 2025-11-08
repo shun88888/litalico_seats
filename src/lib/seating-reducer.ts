@@ -94,6 +94,7 @@ export const seatingReducer = (
         mentors: nextMentors,
         assignments: null,
         counter: state.counter, // counterは使わなくなったが、互換性のため保持
+        memo: state.memo,
       };
     }
     case "remove-mentor": {
@@ -107,6 +108,7 @@ export const seatingReducer = (
         mentors: filtered,
         assignments: null,
         counter: state.counter,
+        memo: state.memo,
       };
     }
     case "update-count": {
@@ -125,6 +127,7 @@ export const seatingReducer = (
         mentors: updated,
         assignments: null,
         counter: state.counter,
+        memo: state.memo,
       };
     }
     case "update-mentor-name": {
@@ -140,6 +143,7 @@ export const seatingReducer = (
         mentors: updatedMentors,
         assignments: null,
         counter: state.counter,
+        memo: state.memo,
       };
     }
     case "set-assignments":
